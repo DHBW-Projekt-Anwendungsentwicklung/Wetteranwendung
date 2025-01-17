@@ -1,1 +1,23 @@
+- Client-Server-Architektur
+- Desktop-Anwendung, Web-Anwendung
+- Container
+- Python Django
 
+
+
+Was brauchen wir alles:
+- Zeitplan
+- Werkzeug/e für Projektverwaltung
+- Erfassung der einzelnen Tätigkeiten
+- Erfassung der funktionalen und nicht-funktionalen Anforderungen
+- Design und Ablaufschema der GUI
+- Handbuch (Für Installation und Verwendung) -> Idee: Am Ende eine unabhängige Person testen lassen!
+- Datenanalyse- und Beschreibung
+- Datenzugriff und Haltung
+- Algorithmus für Distanzermittlung
+- (Infrastruktur und Deployment)
+- Dokumentation von Architektur und Design -> Design: z.B. Klassendiagramm für eine geschriebene Klasse!
+- Testplan
+- Spezifikation der Testszenarios (z.B. Randtests) und der Testdaten
+- Durchführung und Doku der Tests
+- Alle schriftlichen Dokumentationen in einem Dokument sauber zusammenfassen
