@@ -26,4 +26,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/DHBW-Projekt-Anwendungsentwicklung/Wetteranwendung:latest
+          tags: ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
