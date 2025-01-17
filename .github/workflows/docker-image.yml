@@ -19,7 +19,7 @@ jobs:
         with:
           registry: https://ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.PAT }}
+          password: ${{ secrets.SECRET_TEST }}
       - name: Build Docker image and push
         id: docker_build
         uses: docker/build-push-action@v6
