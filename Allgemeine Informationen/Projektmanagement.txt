@@ -1,0 +1,60 @@
+Projektmanagement(Nico)
+-	Zeitplan: 10.01. Beginn der Arbeit, erste Konzeption (GUI, offene Fragen und Anforderungen, Projektdefinitiion/Ziel)
+-	Art des Projektmanagements SCRUM
+-	Werkzeuge: Lasten und Pflichtenheft
+
+16./17.01.2025 erstes Meeting mit Funk
+- GUI – 2-3 Muster erstellen 
+- Zeitplan – wie Detailliert – Informationen zur Einhaltung??
+- Lastenheft anfordern – wird ein Pflichtenheft gefordert
+	- Anforderungen (grafisch, funktional)
+- Kommunikation – Server/Infrastruktur erst Funk dann Gommlich oder direkt Gommlich
+
+Anforderung und Doku(Timea)
+Lasten/Pflichtenheft
+-	Nicht funktionale Anforderungen?
+o	Die die in Moodle stehen – oder kommen noch welche dazu
+-	Installation – Installationspaket für Server geben? – oder nur Bereitstellung des fertigen Containers
+
+
+Entwicklung(Luca, Leon, Tim)
+-	Anforderung Infrastruktur und Deployment
+o	Konkrete Architektur (Aufbau) - Schichtenarchitektur
+o	Wichtigkeit Performance
+o	Datenaktualisierung, täglich in Ordnung?
+o	Desktop und oder Webanwendung
+-	Desktopanwendung
+o	Bereitstellung, Installationpaket
+o	Mindestanforderungen, Auflösung, Leistung,…
+-	Webanwendung
+o	Soll die Webseite über DNS erreichbar sein
+o	Erreichbarkeit Worldwide oder Local? (ob er es besser findet)
+o	Webanwendung nur für Desktops oder auch Mobilgeräte Nutzbar
+-	Anforderungen Serverbetriebssystem, WinServer, Linux,…
+-	Simultaner Zugriff mehrerer Clients?
+Testen(Luca, Leon, Tim)
+-	Testbeispiel(Vorlesung)
+-	Abnahmetest gemeinsam mit Kunde?
+Terminvereinbarung zur Besprechung des Projekts: Anwendungsentwicklung
+Sehr geehrter Herr Prof. Dr. Funk,
+vielen Dank für Ihr Vertrauen in unser Team.
+Gerne möchte ich die ersten Anforderungen an das von Ihnen angefragte Produkt in einem persönlichen Gespräch mit Ihnen besprechen. Dafür schlage ich folgende Termine vor:
+Mittwoch, 15. Januar 2025, ab 17:00 Uhr
+Donnerstag, 16. Januar 2025, ab 17:00 Uhr
+Freitag, 17. Januar 2025, ab 17:00 Uhr
+Bitte lassen Sie mich wissen, welcher Termin Ihnen am besten passt, oder schlagen Sie eine für Sie passende Alternative vor.
+Ich freue mich auf Ihre Rückmeldung.
+Mit freundlichen Grüßen
+Nico Schmid
+ 
+Ideen
+-	Algorithmus für Radiusbestimmung auf der Kugel
+-	Zustimmung für Cookies!!
+-	Meteorologische Jahreszeiten (Winter, Schaltjahr)
+-	Wieso mehr als einen Container?? – Vorlesung
+-	Regelmäßige Termine?
+-	Eigene Deadline – 07.03.
+
+Ablauf:
+
+Test – Funktion – Test – Funktion …
