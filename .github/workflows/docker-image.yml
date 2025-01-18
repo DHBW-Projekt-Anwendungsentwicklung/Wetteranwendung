@@ -4,6 +4,7 @@ name: Build Docker Image and push to GHCR
 on:
   push:
     branches:
+      - main
       - branch-leon
 
 jobs:
