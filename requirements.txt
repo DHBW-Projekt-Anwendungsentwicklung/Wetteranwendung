@@ -1,0 +1,4 @@
+# The requirements.txt file contains python packages which we need to work on the projekt. All packages will be installed automatically.
+
+# Example for right Syntax:
+numpy>=1.22.3
