@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+      - branch-leon
+
+# Testing different Users
 
 permissions: write-all
 
@@ -21,7 +24,7 @@ jobs:
         with:
           registry: https://ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.PAT_BUILD_DOCKER_IMAGE_AND_PUSH_TO_GHCR }}
       - name: Build Docker image and push
         id: docker_build
         uses: docker/build-push-action@v6
