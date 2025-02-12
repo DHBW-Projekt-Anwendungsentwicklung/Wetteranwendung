@@ -1,12 +1,15 @@
 body {
-  background-color: blue;
-  color: white;
   margin: 0;
-  height: 100vh;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
-.container {
-  width: 100%;
-  margin-left: 0;
-  padding: 20px;
+#map {
+  height: 100vh; /* Fullscreen map */
+  width: 100vw;
+}
+
+.leaflet-container {
+  background: #b8b8b8; /* Grey background for the map */
 }
