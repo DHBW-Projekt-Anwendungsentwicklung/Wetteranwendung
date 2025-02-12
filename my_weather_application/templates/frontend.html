@@ -1,14 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <title>My Weather Stations</title>
-  {% load static %}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktive Weltkarte</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-  <div class="container">
-    <h1>Hello World!</h1>
-    <p>Welcome to our first Django project with a styled page!</p>
-  </div>
+    <div id="map"></div>
+
+    <div id="sidebar">
+        <h2>Seiteneingabe</h2>
+        <div class="field">
+            <label for="latitude">Breitengrad:</label>
+            <input type="text" id="latitude" placeholder="z.B. 51.5074">
+        </div>
+        <div class="field">
+            <label for="longitude">Längengrad:</label>
+            <input type="text" id="longitude" placeholder="z.B. -0.1278">
+        </div>
+        <div class="field">
+            <label for="radius">Radius:</label>
+            <input type="range" id="radius" min="0" max="5000" step="50" value="50" oninput="updateRadiusValue()">
+            <div id="radiusValue">Radius: 50 km</div>
+        </div>
+        <div class="field">
+            <label for="maxStations">Anzahl Ergebnisse:</label>
+            <input type="text" id="maxStations" placeholder="z.B. 5">
+        </div>
+        <button onclick="findStationsInRadius()">Suche Wetterstationen</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
