@@ -5,10 +5,12 @@ body, html {
     overflow: hidden;
     font-family: Verdana, sans-serif;
 }
+
 #map {
     height: 100vh;
     width: 100%;
 }
+
 #sidebar {
     position: absolute;
     top: 0;
@@ -22,17 +24,12 @@ body, html {
     overflow-y: auto;
 }
 
-/* Breite der Sidebar bei unterschiedlichen Fenstergrößen */
 @media (max-width: 1200px) {
-    #sidebar {
-        width: 25%; /* Etwas breiter bei schmaleren Bildschirmen */
-    }
+    #sidebar { width: 25%; }
 }
 
 @media (max-width: 800px) {
-    #sidebar {
-        width: 50%; /* Noch breiter für sehr kleine Fenster */
-    }
+    #sidebar { width: 50%; }
 }
 
 #sidebar h2 {
@@ -40,9 +37,11 @@ body, html {
     text-align: center;
     margin-bottom: 20px;
 }
+
 #sidebar .field {
     margin-bottom: 20px;
 }
+
 #sidebar label {
     font-size: 10px;
     color: white;
@@ -50,6 +49,7 @@ body, html {
     display: block;
     margin-bottom: 5px;
 }
+
 #radiusValue {
     font-size: 10px;
     color: white;
@@ -57,6 +57,7 @@ body, html {
     text-align: center;
     margin-top: 5px;
 }
+
 #sidebar input[type="text"],
 #sidebar select {
     width: 80%;
@@ -66,23 +67,21 @@ body, html {
     border-radius: 4px;
     background-color: #155B67;
     color: white;
-    box-shadow: none;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 #sidebar input[type="text"]:hover,
 #sidebar select:hover {
-    background-color: rgba(0, 150, 255, 0.8); /* Helleres Türkis beim Hover */
-    transform: scale(1.02); /* Leichte Vergrößerung */
+    background-color: rgba(0, 150, 255, 0.8);
+    transform: scale(1.02);
 }
 
 #sidebar input[type="text"]:focus,
 #sidebar select:focus {
     outline: none;
-    background-color: rgba(0, 180, 255, 0.9); /* Noch helleres Türkis beim Fokus */
-    transform: scale(1.03); /* Noch größere Vergrößerung beim Fokus */
+    background-color: rgba(0, 180, 255, 0.9);
+    transform: scale(1.03);
 }
-
 
 #sidebar input[type="range"] {
     width: 100%;
@@ -100,6 +99,7 @@ body, html {
     font-family: Verdana, sans-serif;
     transition: background-color 0.2s ease-in-out;
 }
+
 #sidebar button:hover {
     background-color: #006b6b;
 }
@@ -109,31 +109,100 @@ body, html {
     align-items: center;
     gap: 10px;
 }
+
 .year-container select {
     flex: 1;
     padding: 5px;
     border-radius: 4px;
     border: 1px solid #ccc;
-
 }
 
 .year-container span {
     color: white;
 }
 
-.slider-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .slider-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 8px;
+    font-size: 10px;
     color: white;
     margin-top: -5px;
 }
 
 
+/* Popup-Content */
+.leaflet-popup-content-wrapper {
+    width: 500px;  /* Breitere Popups */
+    background: rgba(114, 167, 176, 0.7) !important;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    color: white;
+}
 
+.leaflet-popup-tip {
+    background: rgba(114, 167, 176, 0.7) !important;
+}
+
+.popup-content {
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+}
+
+.popup-content h3 {
+    margin: 5px 0;
+    font-weight: bold;
+}
+
+/* Tab-Buttons */
+.tab-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tab-button {
+    padding: 6px 12px;
+    background-color: rgba(0, 100, 160, 0.9);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.tab-button:hover {
+    background-color: rgba(0, 80, 140, 1);
+}
+
+.tab-button.active {
+    background-color: rgba(0, 60, 120, 1);
+    font-weight: bold;
+}
+
+/* Tabelle */
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.table-container th {
+    background-color: rgba(0, 128, 192, 0.8);
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.table-container td {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.table-container tr:nth-child(even) td {
+    background-color: rgba(255, 255, 255, 0.1);
+}

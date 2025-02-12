@@ -5,7 +5,7 @@ var map = L.map('map', {
     minZoom: 2,
     worldCopyJump: true
 });
-map.zoomControl.setPosition('bottomright');  // Verschiebt die Zoom-Steuerung nach rechts unten
+map.zoomControl.setPosition('bottomright');
 
 var bounds = [
     [-85, -Infinity],
@@ -19,51 +19,35 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 function updateRadiusValue() {
     var radius = document.getElementById('radius').value;
-    document.getElementById('radiusValue').textContent = radius; // Nur die Zahl aktualisieren
-}
-
-
-
-
-
-
-function findStationsInRadius() {
-    var lat = document.getElementById('latitude').value;
-    var lon = document.getElementById('longitude').value;
-    var radius = document.getElementById('radius').value;
-    var maxStations = document.getElementById('maxStations').value;
-    alert('Suche Wetterstationen mit:\nLat: ' + lat + '\nLon: ' + lon + '\nRadius: ' + radius + ' km\nMax. Stationen: ' + maxStations);
+    document.getElementById('radiusValue').textContent = radius;
 }
 
 var currentPing = null;
+var radiusCircle = null;
 
 var customIcon = L.icon({
     iconUrl: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
-    iconSize: [30, 40],
-    iconAnchor: [15, 40],
-    popupAnchor: [0, -40]
+    iconSize: [15, 25],
+    iconAnchor: [7, 12],
+    popupAnchor: [0, -12]
 });
 
 map.on('click', function(e) {
-    // Falls schon ein Marker existiert, entferne ihn
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
-
-    // Falls noch ein Kreis existiert, entferne ihn
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
     }
 
     currentPing = L.marker(e.latlng, { icon: customIcon }).addTo(map)
-        .bindPopup("<b>Position:</b><br>Lat: " + e.latlng.lat.toFixed(4) + "<br>Lon: " + e.latlng.lng.toFixed(4))
+        .bindPopup(generatePopupContent(e.latlng.lat, e.latlng.lng))
         .openPopup();
 
     document.getElementById('latitude').value = e.latlng.lat.toFixed(4);
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
-
 
 function findStationsInRadius() {
     var lat = parseFloat(document.getElementById('latitude').value);
@@ -75,7 +59,6 @@ function findStationsInRadius() {
         return;
     }
 
-    // Entferne den vorherigen Marker und Kreis, falls vorhanden
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
@@ -83,50 +66,72 @@ function findStationsInRadius() {
         map.removeLayer(radiusCircle);
     }
 
-    // Setze neuen Ping-Marker
     currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map)
-        .bindPopup("<b>Position:</b><br>Lat: " + lat.toFixed(4) + "<br>Lon: " + lon.toFixed(4))
+        .bindPopup(generatePopupContent(lat, lon))
         .openPopup();
 
-    // Karte auf die neue Position zentrieren
     map.setView([lat, lon], 10);
 
-    // Zeichne den Radiuskreis
     radiusCircle = L.circle([lat, lon], {
-        color: 'blue',
-        fillColor: 'rgba(0, 0, 255, 0.3)',
+        color: 'rgba(22, 84, 255, 1)',
+        fillColor: 'rgba(22, 84, 255, 0.5)',
         fillOpacity: 0.3,
-        radius: radius * 1000 // Radius in Metern
+        radius: radius * 1000
     }).addTo(map);
 }
 
-var radiusCircle = null;  // Variable für den aktuellen Radiuskreis
-
-function updateRadiusValue() {
-    var radius = document.getElementById('radius').value;
-    document.getElementById('radiusValue').textContent = radius;
-
-    var lat = parseFloat(document.getElementById('latitude').value);
-    var lon = parseFloat(document.getElementById('longitude').value);
-
-    // Entferne den vorherigen Kreis, falls vorhanden
-    if (radiusCircle !== null) {
-        map.removeLayer(radiusCircle);
-    }
-
-    // Falls gültige Koordinaten eingegeben sind, zeichne den Radiuskreis
-    if (!isNaN(lat) && !isNaN(lon)) {
-        radiusCircle = L.circle([lat, lon], {
-            color: 'blue',      // Randfarbe
-            fillColor: 'rgba(0, 0, 255, 0.3)',  // Füllfarbe (halbtransparent)
-            fillOpacity: 0.3,   // Transparenz der Füllung
-            radius: radius * 1000  // Radius in Metern (Schieberegler gibt km an)
-        }).addTo(map);
-    }
+function generatePopupContent(lat, lon) {
+    return `
+        <div class="popup-content">
+            <h3>Position: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}</h3>
+            <div class="tab-container">
+                <button class="tab-button active" onclick="showTab('table')">Tabelle</button>
+                <button class="tab-button" onclick="showTab('chart')">Grafik</button>
+            </div>
+            <div id="table" class="tab-content active table-container">
+                <table>
+                    <tr>
+                        <th>Jahr</th>
+                        <th>Mittelwert</th>
+                        <th>Frühling</th>
+                        <th>Sommer</th>
+                        <th>Herbst</th>
+                        <th>Winter</th>
+                    </tr>
+                    <tr>
+                        <td>2022</td>
+                        <td>10°C</td>
+                        <td>min: 8°C<br>max: 18°C</td>
+                        <td>min: 20°C<br>max: 30°C</td>
+                        <td>min: 9°C<br>max: 15°C</td>
+                        <td>min: -2°C<br>max: 8°C</td>
+                    </tr>
+                    <tr>
+                        <td>2023</td>
+                        <td>12°C</td>
+                        <td>min: 10°C<br>max: 20°C</td>
+                        <td>min: 22°C<br>max: 32°C</td>
+                        <td>min: 10°C<br>max: 16°C</td>
+                        <td>min: 0°C<br>max: 9°C</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="chart" class="tab-content" style="display:none;">
+                <p>Hier könnte eine Grafik sein!</p>
+            </div>
+        </div>
+    `;
 }
 
 
-// Funktion, um die Dropdown-Menüs mit Jahren zu füllen
+function showTab(tabId) {
+    var tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(function(tab) {
+        tab.style.display = 'none';
+    });
+    document.getElementById(tabId).style.display = 'block';
+}
+
 function populateYearDropdowns() {
     var yearFrom = document.getElementById('yearFrom');
     var yearTo = document.getElementById('yearTo');
@@ -143,10 +148,8 @@ function populateYearDropdowns() {
         yearTo.appendChild(optionTo);
     }
 
-    // Standardwerte setzen (z.B. 2000–2025)
     yearFrom.value = 2000;
     yearTo.value = 2025;
 }
 
-// Rufe die Funktion beim Laden der Seite auf
 populateYearDropdowns();
