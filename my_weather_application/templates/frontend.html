@@ -20,11 +20,17 @@
             <label for="longitude">Längengrad:</label>
             <input type="text" id="longitude" placeholder="z.B. -0.1278">
         </div>
+
         <div class="field">
-            <label for="radius">Radius:</label>
-            <input type="range" id="radius" min="0" max="5000" step="50" value="500" oninput="updateRadiusValue()">
-            <div id="radiusValue">Radius: 500 km</div>
-        </div>
+    <label for="radius">Radius:</label>
+    <input type="range" id="radius" min="0" max="5000" step="50" value="500" oninput="updateRadiusValue()">
+    <div class="slider-labels">
+        <span>0</span>
+        <span>5000</span>
+    </div>
+    <div id="radiusValue">Radius: 500 km</div>
+</div>
+
 
         <div class="field">
     <label>Zeitraum:</label>
