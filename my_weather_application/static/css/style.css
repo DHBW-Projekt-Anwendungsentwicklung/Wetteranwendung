@@ -3,7 +3,7 @@ body, html {
     padding: 0;
     height: 100%;
     overflow: hidden;
-    font-family: Arial, sans-serif;
+    font-family: Verdana, sans-serif;
 }
 #map {
     height: 100vh;
@@ -14,13 +14,27 @@ body, html {
     top: 0;
     left: 0;
     height: 100%;
-    width: 25%;
-    background-color: rgba(64, 220, 255, 0.6);
+    width: 15%;
+    background-color: rgba(114, 167, 176, 0.7);
     z-index: 1000;
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
 }
+
+/* Breite der Sidebar bei unterschiedlichen Fenstergrößen */
+@media (max-width: 1200px) {
+    #sidebar {
+        width: 25%; /* Etwas breiter bei schmaleren Bildschirmen */
+    }
+}
+
+@media (max-width: 800px) {
+    #sidebar {
+        width: 50%; /* Noch breiter für sehr kleine Fenster */
+    }
+}
+
 #sidebar h2 {
     color: white;
     text-align: center;
@@ -30,20 +44,50 @@ body, html {
     margin-bottom: 20px;
 }
 #sidebar label {
+    font-size: 10px;
     color: white;
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
 }
 #radiusValue {
+    font-size: 10px;
     color: white;
     font-weight: bold;
     text-align: center;
     margin-top: 5px;
 }
+#sidebar input[type="text"],
+#sidebar select {
+    width: 80%;
+    padding: 6px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #155B67;
+    color: white;
+    box-shadow: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#sidebar input[type="text"]:hover,
+#sidebar select:hover {
+    background-color: rgba(0, 150, 255, 0.8); /* Helleres Türkis beim Hover */
+    transform: scale(1.02); /* Leichte Vergrößerung */
+}
+
+#sidebar input[type="text"]:focus,
+#sidebar select:focus {
+    outline: none;
+    background-color: rgba(0, 180, 255, 0.9); /* Noch helleres Türkis beim Fokus */
+    transform: scale(1.03); /* Noch größere Vergrößerung beim Fokus */
+}
+
+
 #sidebar input[type="range"] {
     width: 100%;
 }
+
 #sidebar button {
     width: 100%;
     padding: 10px;
@@ -51,8 +95,10 @@ body, html {
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
+    font-family: Verdana, sans-serif;
+    transition: background-color 0.2s ease-in-out;
 }
 #sidebar button:hover {
     background-color: #006b6b;
@@ -61,13 +107,17 @@ body, html {
 .year-container {
     display: flex;
     align-items: center;
-    gap: 10px; /* Abstand zwischen den Dropdowns und dem "bis"-Text */
+    gap: 10px;
 }
-
 .year-container select {
-    flex: 1; /* Beide Dropdowns teilen sich gleichmäßig den verfügbaren Platz */
+    flex: 1;
     padding: 5px;
     border-radius: 4px;
     border: 1px solid #ccc;
+
+}
+
+.year-container span {
+    color: white;
 }
 

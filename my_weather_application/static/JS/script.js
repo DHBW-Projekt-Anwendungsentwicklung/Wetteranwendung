@@ -40,8 +40,15 @@ var customIcon = L.icon({
 });
 
 map.on('click', function(e) {
+    // Falls schon ein Marker existiert, entferne ihn
     if (currentPing !== null) {
         map.removeLayer(currentPing);
+    }
+
+    // Falls noch ein Kreis existiert, entferne ihn
+    if (radiusCircle !== null) {
+        map.removeLayer(radiusCircle);
+        radiusCircle = null;
     }
 
     currentPing = L.marker(e.latlng, { icon: customIcon }).addTo(map)
@@ -52,29 +59,40 @@ map.on('click', function(e) {
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
+
 function findStationsInRadius() {
     var lat = parseFloat(document.getElementById('latitude').value);
     var lon = parseFloat(document.getElementById('longitude').value);
     var radius = document.getElementById('radius').value;
-    var maxStations = document.getElementById('maxStations').value;
 
     if (isNaN(lat) || isNaN(lon)) {
         alert("Bitte gültige Breiten- und Längengrade eingeben.");
         return;
     }
 
-    // Entferne den vorherigen Marker, falls vorhanden
+    // Entferne den vorherigen Marker und Kreis, falls vorhanden
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
+    if (radiusCircle !== null) {
+        map.removeLayer(radiusCircle);
+    }
 
-    // Setze neuen Ping-Marker mit dem benutzerdefinierten Icon
+    // Setze neuen Ping-Marker
     currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map)
         .bindPopup("<b>Position:</b><br>Lat: " + lat.toFixed(4) + "<br>Lon: " + lon.toFixed(4))
         .openPopup();
 
     // Karte auf die neue Position zentrieren
     map.setView([lat, lon], 10);
+
+    // Zeichne den Radiuskreis
+    radiusCircle = L.circle([lat, lon], {
+        color: 'blue',
+        fillColor: 'rgba(0, 0, 255, 0.3)',
+        fillOpacity: 0.3,
+        radius: radius * 1000 // Radius in Metern
+    }).addTo(map);
 }
 
 
