@@ -19,8 +19,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 function updateRadiusValue() {
     var radius = document.getElementById('radius').value;
-    document.getElementById('radiusValue').textContent = "Radius: " + radius + " km";
+    document.getElementById('radiusValue').textContent = radius; // Nur die Zahl aktualisieren
 }
+
+
+
+
+
 
 function findStationsInRadius() {
     var lat = document.getElementById('latitude').value;
@@ -100,7 +105,7 @@ var radiusCircle = null;  // Variable für den aktuellen Radiuskreis
 
 function updateRadiusValue() {
     var radius = document.getElementById('radius').value;
-    document.getElementById('radiusValue').textContent = "Radius: " + radius + " km";
+    document.getElementById('radiusValue').textContent = radius;
 
     var lat = parseFloat(document.getElementById('latitude').value);
     var lon = parseFloat(document.getElementById('longitude').value);
