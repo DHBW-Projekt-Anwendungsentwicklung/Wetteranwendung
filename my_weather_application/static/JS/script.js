@@ -100,7 +100,6 @@ function findStationsInRadius() {
     }).addTo(map);
 }
 
-
 var radiusCircle = null;  // Variable für den aktuellen Radiuskreis
 
 function updateRadiusValue() {
