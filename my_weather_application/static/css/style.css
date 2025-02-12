@@ -15,7 +15,7 @@ body, html {
     left: 0;
     height: 100%;
     width: 25%;
-    background-color: rgba(64, 224, 208, 0.7);
+    background-color: rgba(64, 220, 255, 0.6);
     z-index: 1000;
     padding: 20px;
     box-sizing: border-box;
@@ -57,3 +57,17 @@ body, html {
 #sidebar button:hover {
     background-color: #006b6b;
 }
+
+.year-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Abstand zwischen den Dropdowns und dem "bis"-Text */
+}
+
+.year-container select {
+    flex: 1; /* Beide Dropdowns teilen sich gleichmäßig den verfügbaren Platz */
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
