@@ -28,17 +28,14 @@ var radiusCircle = null;
 var customIcon = L.icon({
     iconUrl: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
     iconSize: [15, 25],
-    iconAnchor: [7, 12],
+    iconAnchor: [7, 25],
     popupAnchor: [0, -12]
 });
 
-map.on('click', function(e) {
+// Nur Marker beim Klicken setzen
+map.on('click', function (e) {
     if (currentPing !== null) {
         map.removeLayer(currentPing);
-    }
-    if (radiusCircle !== null) {
-        map.removeLayer(radiusCircle);
-        radiusCircle = null;
     }
 
     currentPing = L.marker(e.latlng, { icon: customIcon }).addTo(map)
@@ -59,25 +56,26 @@ function findStationsInRadius() {
         return;
     }
 
-    if (currentPing !== null) {
-        map.removeLayer(currentPing);
-    }
+var maxStations = document.getElementById('maxStations').value;
+
+if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
+    alert("Bitte geben Sie eine gültige Anzahl als ganze Zahl ein.");
+    return;
+}
+
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
     }
 
-    currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map)
-        .bindPopup(generatePopupContent(lat, lon))
-        .openPopup();
-
-    map.setView([lat, lon], 10);
-
+    // Zeichne den Kreis
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
         fillOpacity: 0.3,
         radius: radius * 1000
     }).addTo(map);
+
+    map.setView([lat, lon], 5);
 }
 
 function generatePopupContent(lat, lon) {
@@ -123,10 +121,9 @@ function generatePopupContent(lat, lon) {
     `;
 }
 
-
 function showTab(tabId) {
     var tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(function(tab) {
+    tabs.forEach(function (tab) {
         tab.style.display = 'none';
     });
     document.getElementById(tabId).style.display = 'block';
