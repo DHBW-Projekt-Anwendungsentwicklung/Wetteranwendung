@@ -34,7 +34,6 @@ body, html {
     #sidebar { width: 50%; }
 }
 
-/* Breite der Sidebar für sehr kleine Bildschirme */
 @media (max-width: 500px) {
     #sidebar {
         width: 70%;
@@ -182,7 +181,6 @@ body, html {
 .slider-labels span:last-child {
     text-align: right;
 }
-
 
 /* Popup-Content */
 .leaflet-popup-content-wrapper {

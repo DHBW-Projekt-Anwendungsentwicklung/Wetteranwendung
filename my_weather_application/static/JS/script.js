@@ -1,3 +1,4 @@
+// Karte initialisieren
 var map = L.map('map', {
     center: [0, 0],
     zoom: 3,
@@ -5,26 +6,33 @@ var map = L.map('map', {
     minZoom: 2,
     worldCopyJump: true
 });
+
+// Zoom-Steuerung nach unten rechts
 map.zoomControl.setPosition('bottomright');
-//bound-fix
+
+// Begrenzung der Karte (bound-fix)
 var bounds = [
     [-85, -Infinity],
     [85, Infinity]
 ];
 map.setMaxBounds(bounds);
 
+// TileLayer hinzufügen (OpenStreetMap)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
+// Aktuellen Wert des Radius-Range-Inputs anzeigen
 function updateRadiusValue() {
     var radius = document.getElementById('radius').value;
     document.getElementById('radiusValue').textContent = radius;
 }
 
+// Globale Variablen für Marker (Ping) und Circle (Radius)
 var currentPing = null;
 var radiusCircle = null;
 
+// Eigenes Icon für den Pin
 var customIcon = L.icon({
     iconUrl: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
     iconSize: [15, 25],
@@ -32,20 +40,38 @@ var customIcon = L.icon({
     popupAnchor: [0, -12]
 });
 
-
+// Klick-Event auf der Karte
 map.on('click', function (e) {
+    // Falls schon ein Marker existiert, entferne ihn
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
+    // Falls schon ein Kreis existiert, entferne ihn
+    if (radiusCircle !== null) {
+        map.removeLayer(radiusCircle);
+        radiusCircle = null;
+    }
 
-    currentPing = L.marker(e.latlng, { icon: customIcon }).addTo(map)
-        .bindPopup(generatePopupContent(e.latlng.lat, e.latlng.lng))
+    // Neuen Marker setzen und Popup binden (mit automatischem Verschieben)
+    currentPing = L.marker(e.latlng, { icon: customIcon })
+        .addTo(map)
+        .bindPopup(
+            generatePopupContent(e.latlng.lat, e.latlng.lng),
+            {
+                autoPan: true,                     // Popup verschieben, damit es in der Karte bleibt
+                keepInView: true,                 // Falls nötig, Karte verschieben, damit Popup sichtbar bleibt
+                autoPanPaddingTopLeft: L.point(50, 50),
+                autoPanPaddingBottomRight: L.point(50, 50)
+            }
+        )
         .openPopup();
 
+    // Eingabefelder aktualisieren
     document.getElementById('latitude').value = e.latlng.lat.toFixed(4);
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
+// Funktion zum Anzeigen des Kreises
 function findStationsInRadius() {
     var lat = parseFloat(document.getElementById('latitude').value);
     var lon = parseFloat(document.getElementById('longitude').value);
@@ -56,17 +82,18 @@ function findStationsInRadius() {
         return;
     }
 
-var maxStations = document.getElementById('maxStations').value;
+    var maxStations = document.getElementById('maxStations').value;
+    if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
+        alert("Bitte geben Sie eine ganze Zahl ein!");
+        return;
+    }
 
-if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
-    alert("Bitte geben Sie eine ganze Zahl ein.");
-    return;
-}
-
+    // Falls schon ein Kreis existiert, zuerst entfernen
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
     }
 
+    // Neuen Kreis erstellen
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
@@ -74,9 +101,11 @@ if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
         radius: radius * 1000
     }).addTo(map);
 
+    // Karte auf diesen Bereich zoomen
     map.setView([lat, lon], 5);
 }
 
+// Popup-Inhalt generieren
 function generatePopupContent(lat, lon) {
     return `
         <div class="popup-content">
@@ -120,6 +149,7 @@ function generatePopupContent(lat, lon) {
     `;
 }
 
+// Tabs wechseln (Tabelle / Grafik)
 function showTab(tabId) {
     var tabs = document.querySelectorAll('.tab-content');
     tabs.forEach(function (tab) {
@@ -128,6 +158,7 @@ function showTab(tabId) {
     document.getElementById(tabId).style.display = 'block';
 }
 
+// Dropdowns für Jahresauswahl befüllen
 function populateYearDropdowns() {
     var yearFrom = document.getElementById('yearFrom');
     var yearTo = document.getElementById('yearTo');
@@ -144,8 +175,10 @@ function populateYearDropdowns() {
         yearTo.appendChild(optionTo);
     }
 
+    // Standardwerte setzen
     yearFrom.value = 2000;
     yearTo.value = 2025;
 }
 
+// Beim Laden der Seite das Dropdown befüllen
 populateYearDropdowns();
