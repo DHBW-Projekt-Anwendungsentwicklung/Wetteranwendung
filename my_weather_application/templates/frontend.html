@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interaktive Weltkarte</title>
     {% load static %}
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <!-- Dein eigenes CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
@@ -41,7 +43,10 @@
         </div>
         <button onclick="findStationsInRadius()">Suche Wetterstationen</button>
     </div>
+
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Dein eigenes JavaScript -->
     <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
