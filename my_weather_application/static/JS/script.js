@@ -67,7 +67,6 @@ if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
         map.removeLayer(radiusCircle);
     }
 
-    // Zeichne den Kreis
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
@@ -115,7 +114,7 @@ function generatePopupContent(lat, lon) {
                 </table>
             </div>
             <div id="chart" class="tab-content" style="display:none;">
-                <p>GRafik anzeigen!</p>
+                <p>Grafik anzeigen!</p>
             </div>
         </div>
     `;
