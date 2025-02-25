@@ -89,7 +89,7 @@ body, html {
 #sidebar select:focus {
     outline: none;
     background-color: rgba(0, 180, 255, 0.9);
-    transform: scale(1.03);
+    transform: scale(1.02);
 }
 
 #sidebar input[type="range"] {
@@ -138,8 +138,6 @@ body, html {
     margin-top: -5px;
 }
 
-
-/* Popup-Content */
 .leaflet-popup-content-wrapper {
     width: 500px;  /* Breitere Popups */
     background: rgba(114, 167, 176, 0.7) !important;
@@ -164,7 +162,6 @@ body, html {
     font-weight: bold;
 }
 
-/* Tab-Buttons */
 .tab-container {
     display: flex;
     justify-content: center;
@@ -191,7 +188,6 @@ body, html {
     font-weight: bold;
 }
 
-/* Tabelle */
 .table-container table {
     width: 100%;
     border-collapse: collapse;
