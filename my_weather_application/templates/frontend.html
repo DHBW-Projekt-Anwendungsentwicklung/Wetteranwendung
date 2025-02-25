@@ -1,47 +1,14 @@
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interaktive Weltkarte</title>
-    {% load static %}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <title>My Weather Stations</title>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <div id="map"></div>
-    <div id="sidebar">
-        <div class="field">
-            <label for="latitude">Breitengrad:</label>
-            <input type="text" id="latitude" placeholder="z.B. 51.5074">
-        </div>
-        <div class="field">
-            <label for="longitude">Längengrad:</label>
-            <input type="text" id="longitude" placeholder="z.B. -0.1278">
-        </div>
-        <div class="field">
-            <label for="radius">Radius: <span id="radiusValue">500</span> km</label>
-            <input type="range" id="radius" min="0" max="5000" step="50" value="500" oninput="updateRadiusValue()">
-            <div class="slider-labels">
-                <span>0</span>
-                <span>5000</span>
-            </div>
-        </div>
-        <div class="field">
-            <label>Zeitraum:</label>
-            <div class="year-container">
-                <select id="yearFrom"></select>
-                <span>bis</span>
-                <select id="yearTo"></select>
-            </div>
-        </div>
-        <div class="field">
-            <label for="maxStations">Anzahl Ergebnisse:</label>
-            <input type="text" id="maxStations" placeholder="z.B. 5" min="1" step="1">
-        </div>
-        <button onclick="findStationsInRadius()">Suche Wetterstationen</button>
-    </div>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="{% static 'js/script.js' %}"></script>
+  <div class="container">
+    <h1>Hello World!</h1>
+    <p>Welcome to Luca first Django project with a styled page!</p>
+  </div>
 </body>
 </html>
