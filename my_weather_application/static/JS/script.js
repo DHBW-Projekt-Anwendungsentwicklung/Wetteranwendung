@@ -78,7 +78,7 @@ function findStationsInRadius() {
     var radius = document.getElementById('radius').value;
 
     if (isNaN(lat) || isNaN(lon)) {
-        alert("Bitte gültige Breiten- und Längengrade eingeben!");
+        alert("Bitte gültige Breiten- und Längengrade eingeben.");
         return;
     }
 
@@ -180,5 +180,5 @@ function populateYearDropdowns() {
     yearTo.value = 2025;
 }
 
-// Beim Laden der Seite das Dropdown befüllen
+// Beim Laden der Seite das Dropdown befüllenn
 populateYearDropdowns();

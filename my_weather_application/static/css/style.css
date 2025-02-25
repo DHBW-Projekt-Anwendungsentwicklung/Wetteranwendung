@@ -16,7 +16,9 @@ body, html {
     top: 0;
     left: 0;
     height: 100%;
-    width: 15%;
+    width: 20% !important;
+    min-width: 250px;
+    max-width: 300px;
     background-color: rgba(114, 167, 176, 0.7);
     z-index: 1000;
     padding: 20px;
@@ -48,27 +50,30 @@ body, html {
 
 #sidebar .field {
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
 }
 
 #sidebar label {
-    font-size: 10px;
+    font-size: 14px;
     color: white;
-    font-weight: bold;
     display: block;
     margin-bottom: 5px;
 }
 
 #radiusValue {
-    font-size: 10px;
+    font-size: 14px;
     color: white;
-    font-weight: bold;
     text-align: center;
     margin-top: 5px;
 }
 
 #sidebar input[type="text"],
 #sidebar select {
-    width: 80%;
+    width: 100%;
     padding: 6px;
     font-size: 12px;
     border: none;
@@ -92,7 +97,34 @@ body, html {
 }
 
 #sidebar input[type="range"] {
+    -webkit-appearance: none;
     width: 100%;
+    height: 6px;
+    background: #155B67;
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+#sidebar input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 2px solid #155B67;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#sidebar input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 2px solid #155B67;
+    border-radius: 50%;
+    cursor: pointer;
 }
 
 #sidebar button {
@@ -116,6 +148,8 @@ body, html {
     display: flex;
     align-items: center;
     gap: 10px;
+    justify-content: space-between;
+    width: 105%;
 }
 
 .year-container select {
@@ -123,6 +157,8 @@ body, html {
     padding: 5px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    width: 50%;
+    min-width: 80px;
 }
 
 .year-container span {
@@ -132,9 +168,18 @@ body, html {
 .slider-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 10px;
+    width: 100%;
+    font-size: 12px;
     color: white;
-    margin-top: -5px;
+    margin-top: 5px;
+}
+
+.slider-labels span:first-child {
+    text-align: left;
+}
+
+.slider-labels span:last-child {
+    text-align: right;
 }
 
 /* Popup-Content */
