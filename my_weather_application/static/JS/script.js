@@ -79,7 +79,7 @@ function findStationsInRadius() {
     var radius = document.getElementById('radius').value;
 
     if (isNaN(lat) || isNaN(lon)) {
-        alert("Bitte gültige Breiten- und Längengrade eingeben.");
+        alert("Bitte gültige Breiten- und Längengrade eingeben!");
         return;
     }
 
