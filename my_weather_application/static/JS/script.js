@@ -59,7 +59,7 @@ function findStationsInRadius() {
 var maxStations = document.getElementById('maxStations').value;
 
 if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
-    alert("Bitte geben Sie eine ganze Zahl ein!");
+    alert("Bitte geben Sie eine ganze Zahl ein.");
     return;
 }
 
