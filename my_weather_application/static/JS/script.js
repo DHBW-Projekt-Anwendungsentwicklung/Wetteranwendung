@@ -32,7 +32,7 @@ var customIcon = L.icon({
     popupAnchor: [0, -12]
 });
 
-// Nur Marker beim Klicken setzen
+
 map.on('click', function (e) {
     if (currentPing !== null) {
         map.removeLayer(currentPing);
@@ -59,7 +59,7 @@ function findStationsInRadius() {
 var maxStations = document.getElementById('maxStations').value;
 
 if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
-    alert("Bitte geben Sie eine gültige Anzahl als ganze Zahl ein.");
+    alert("Bitte geben Sie eine ganze Zahl ein.");
     return;
 }
 
@@ -115,7 +115,7 @@ function generatePopupContent(lat, lon) {
                 </table>
             </div>
             <div id="chart" class="tab-content" style="display:none;">
-                <p>Hier könnte eine Grafik sein!</p>
+                <p>GRafik anzeigen!</p>
             </div>
         </div>
     `;
