@@ -6,7 +6,7 @@ var map = L.map('map', {
     worldCopyJump: true
 });
 map.zoomControl.setPosition('bottomright');
-
+//bound-fix
 var bounds = [
     [-85, -Infinity],
     [85, Infinity]
