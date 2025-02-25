@@ -180,5 +180,5 @@ function populateYearDropdowns() {
     yearTo.value = 2025;
 }
 
-// Beim Laden der Seite das Dropdown befüllen
+// Beim Laden der Seite das Dropdown befüllenn
 populateYearDropdowns();
