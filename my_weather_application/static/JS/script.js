@@ -31,6 +31,7 @@ function updateRadiusValue() {
 // Globale Variablen für Marker (Ping) und Circle (Radius)
 var currentPing = null;
 var radiusCircle = null;
+var stationMarkers = [];
 
 // Eigenes Icon für den Pin
 var customIcon = L.icon({
@@ -42,24 +43,21 @@ var customIcon = L.icon({
 
 // Klick-Event auf der Karte
 map.on('click', function (e) {
-    // Falls schon ein Marker existiert, entferne ihn
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
-    // Falls schon ein Kreis existiert, entferne ihn
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
     }
 
-    // Neuen Marker setzen und Popup binden (mit automatischem Verschieben)
     currentPing = L.marker(e.latlng, { icon: customIcon })
         .addTo(map)
         .bindPopup(
             generatePopupContent(e.latlng.lat, e.latlng.lng),
             {
-                autoPan: true,                     // Popup verschieben, damit es in der Karte bleibt
-                keepInView: true,                 // Falls nötig, Karte verschieben, damit Popup sichtbar bleibt
+                autoPan: true,
+                keepInView: true,
                 autoPanPaddingTopLeft: L.point(50, 50),
                 autoPanPaddingBottomRight: L.point(50, 50),
                 maxWidth: Infinity
@@ -67,34 +65,29 @@ map.on('click', function (e) {
         )
         .openPopup();
 
-    // Eingabefelder aktualisieren
     document.getElementById('latitude').value = e.latlng.lat.toFixed(4);
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
 // Funktion zum Anzeigen des Kreises
 function findStationsInRadius() {
-    var lat = parseFloat(document.getElementById('latitude').value);
-    var lon = parseFloat(document.getElementById('longitude').value);
-    var radius = document.getElementById('radius').value;
+    var lat = parseFloat(document.getElementById("latitude").value);
+    var lon = parseFloat(document.getElementById("longitude").value);
+    var radius = parseFloat(document.getElementById("radius").value);
+    var maxStations = parseInt(document.getElementById("maxStations").value, 10);
 
-    if (isNaN(lat) || isNaN(lon)) {
-        alert("Bitte gültige Breiten- und Längengrade eingeben!");
+    if (isNaN(lat) || isNaN(lon) || isNaN(radius) || isNaN(maxStations)) {
+        alert("Bitte gültige Werte für Breite, Länge, Radius und Anzahl eingeben!");
         return;
     }
 
-    var maxStations = document.getElementById('maxStations').value;
-    if (maxStations.trim() === "" || !/^\d+$/.test(maxStations)) {
-        alert("Bitte geben Sie eine ganze Zahl ein!");
-        return;
-    }
-
-    // Falls schon ein Kreis existiert, zuerst entfernen
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
+        radiusCircle = null;
     }
+    stationMarkers.forEach(marker => map.removeLayer(marker));
+    stationMarkers = [];
 
-    // Neuen Kreis erstellen
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
@@ -102,10 +95,27 @@ function findStationsInRadius() {
         radius: radius * 1000
     }).addTo(map);
 
-    // Karte an den Kreis anpassen (automatisch hinein- oder hinauszoomen):
-    map.fitBounds(radiusCircle.getBounds(), {
-        padding: [20, 20] // optionaler innerer Rand in Pixeln
-    });
+    map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
+
+    fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Gefundene Stationen:", data);
+
+            data.forEach(station => {
+                var marker = L.marker([station.latitude, station.longitude])
+                    .addTo(map)
+                    .bindPopup(`
+                        <b>${station.station_id}</b><br>
+                        ${station.name || "No Name"}<br>
+                        Lat: ${station.latitude}, Lon: ${station.longitude}
+                    `);
+                stationMarkers.push(marker);
+            });
+        })
+        .catch(error => {
+            console.error("Fehler beim Abrufen der Stationsdaten:", error);
+        });
 }
 
 // Popup-Inhalt generieren
@@ -182,70 +192,21 @@ function populateYearDropdowns() {
         yearTo.appendChild(optionTo);
     }
 
-    // Standardwerte setzen
     yearFrom.value = 2000;
     yearTo.value = 2025;
 }
 
 function validateMaxStations() {
     var input = document.getElementById("maxStations");
-    var value = parseInt(input.value, 10);  // Zahl aus Eingabe holen
+    var value = parseInt(input.value, 10);
 
-    if (!isNaN(value)) { // Prüfen, ob überhaupt eine Zahl eingegeben wurde
+    if (!isNaN(value)) {
         if (value > 10) {
-            input.value = 10;  // Falls größer als 10, auf 10 setzen
+            input.value = 10;
         } else if (value < 1) {
-            input.value = 1;   // Falls kleiner als 1, auf 1 setzen
+            input.value = 1;
         }
     }
 }
 
-// Beim Laden der Seite das Dropdown befüllenn
 populateYearDropdowns();
-
-function findStationsInRadius() {
-    // Lese Eingaben aus dem Frontend (Breite, Länge, Radius, maxStations etc.)
-    var lat = document.getElementById("latitude").value;
-    var lon = document.getElementById("longitude").value;
-    var radius = document.getElementById("radius").value;
-    var maxStations = document.getElementById("maxStations").value;
-
-    // An Deine Django-Route per fetch
-    fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Gefundene Stationen:", data);
-
-            // 'data' ist jetzt ein Array von Station-Objekten. Beispiel:
-            // [
-            //   {
-            //     "station_id": "ACW00011604",
-            //     "latitude": -14.2167,
-            //     "longitude": -170.5667,
-            //     "elevation": 30.0,
-            //     "state": null,
-            //     "name": "TAGA  ...",
-            //   },
-            //   ...
-            // ]
-
-            // Falls Du beim Klick schon einen alten Marker/Circle entfernen willst,
-            // kannst du hier Marker-Entfernung vornehmen...
-
-            // Jetzt neue Marker hinzufügen:
-            data.forEach(station => {
-                // z.B. Leaflet-Marker
-                var marker = L.marker([station.latitude, station.longitude])
-                    .addTo(map)  // 'map' ist dein bereits initialisiertes Leaflet-Kartenobjekt
-                    .bindPopup(`
-                        <b>${station.station_id}</b><br>
-                        ${station.name || "No Name"}<br>
-                        Lat: ${station.latitude}, Lon: ${station.longitude}
-                    `);
-            });
-        })
-        .catch(error => {
-            console.error("Fehler beim Abrufen der Stationsdaten:", error);
-        });
-}
-
