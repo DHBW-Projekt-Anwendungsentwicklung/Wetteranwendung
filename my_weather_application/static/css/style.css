@@ -1,9 +1,15 @@
+/* 
+   style.css
+   -- Wichtige Änderung:
+   Alle Farben im Sidebar-Bereich sind nun auf Weiß (#FFF) gesetzt.
+*/
+
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     overflow: hidden;
-    font-family: Verdana, sans-serif;
+    font-family: Roboto, sans-serif;
 }
 
 #map {
@@ -24,6 +30,8 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    /* Hier die globale Farbe auf Weiß setzen */
+    color: #fff;
 }
 
 @media (max-width: 1200px) {
@@ -43,7 +51,8 @@ body, html {
 }
 
 #sidebar h2 {
-    color: white;
+    /* Überschrift in Weiß */
+    color: #fff;
     text-align: center;
     margin-bottom: 20px;
 }
@@ -58,49 +67,66 @@ body, html {
 }
 
 #sidebar label {
-    font-size: 14px;
-    color: white;
+    font-size: 20px;
+    /* Label-Farbe auf Weiß */
+    color: #fff;
     display: block;
     margin-bottom: 5px;
 }
 
 #radiusValue {
-    font-size: 14px;
-    color: white;
+    font-size: 20px;
+    /* Auch hier Weiß */
+    color: #fff;
     text-align: center;
     margin-top: 5px;
 }
 
+/* Inputs und Selects im Sidebar */
 #sidebar input[type="text"],
 #sidebar select {
     width: 100%;
     padding: 6px;
-    font-size: 12px;
+    font-size: 16px;
     border: none;
     border-radius: 4px;
-    background-color: #155B67;
-    color: white;
+    background-color: rgba(0, 128, 192, 0.4);
+    /* Text-Farbe auf Weiß */
+    color: #fff;
     transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#sidebar select option {
+    background-color: rgba(0, 0, 0, 0.184);
+    /* Schriftfarbe in den Optionen auch Weiß */
+    color: #fff;
+}
+
+/* Placeholder-Farbe auf Weiß */
+#sidebar input[type="text"]::placeholder {
+    color: #fff;
+    opacity: 0.7; /* Etwas Transparenz, damit man es sieht */
 }
 
 #sidebar input[type="text"]:hover,
 #sidebar select:hover {
-    background-color: rgba(0, 150, 255, 0.8);
+    background-color: rgba(0, 150, 255, 0.4);
     transform: scale(1.02);
 }
 
 #sidebar input[type="text"]:focus,
 #sidebar select:focus {
     outline: none;
-    background-color: rgba(0, 180, 255, 0.9);
+    background-color: rgba(0, 175, 250, 0.6);
     transform: scale(1.03);
 }
 
+/* Slider */
 #sidebar input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
     height: 6px;
-    background: #155B67;
+    background: #108ca2;
     border-radius: 5px;
     outline: none;
     opacity: 0.9;
@@ -113,7 +139,7 @@ body, html {
     width: 14px;
     height: 14px;
     background: white;
-    border: 2px solid #155B67;
+    border: 2px solid #0f8ba1;
     border-radius: 50%;
     cursor: pointer;
 }
@@ -122,55 +148,74 @@ body, html {
     width: 14px;
     height: 14px;
     background: white;
-    border: 2px solid #155B67;
+    border: 2px solid #0f8ba1;
     border-radius: 50%;
     cursor: pointer;
 }
 
+/* Button */
 #sidebar button {
     width: 100%;
     padding: 10px;
-    background-color: #008b8b;
-    color: white;
+    background-color: #0f8ba1;
+    /* Schriftfarbe auf Weiß */
+    color: #fff;
     border: none;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 22px;
     cursor: pointer;
-    font-family: Verdana, sans-serif;
+    font-family: Roboto, sans-serif;
     transition: background-color 0.2s ease-in-out;
 }
 
 #sidebar button:hover {
-    background-color: #006b6b;
+    background-color: #14b7d4;
+    transform: scale(1.03);
 }
 
+/* Zeitraum-Eingabe */
 .year-container {
     display: flex;
     align-items: center;
     gap: 10px;
-    justify-content: space-between;
-    width: 105%;
 }
 
-.year-container select {
+.year-container input {
     flex: 1;
-    padding: 5px;
+    padding: 6px;
+    font-size: 12px;
+    border: none;
     border-radius: 4px;
-    border: 1px solid #ccc;
-    width: 50%;
-    min-width: 80px;
+    background-color: rgba(0, 150, 255, 0.4);
+    /* Schriftfarbe weiß */
+    color: #fff;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.year-container input:hover {
+    background-color: rgba(0, 150, 255, 0.8);
+    transform: scale(1.02);
+}
+
+.year-container input:focus {
+    outline: none;
+    background-color: rgba(0, 180, 255, 0.9);
+    transform: scale(1.03);
 }
 
 .year-container span {
     color: white;
+    font-weight: bold;
 }
 
 .slider-labels {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    font-size: 12px;
-    color: white;
+    font-size: 18px;
+    /* Text-Farbe weiß */
+    color: #fff;
     margin-top: 5px;
 }
 
@@ -188,7 +233,11 @@ body, html {
     background: rgba(114, 167, 176, 0.7) !important;
     border-radius: 10px;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-    color: white;
+    color: rgb(1, 43, 63);
+}
+
+.leaflet-popup-content {
+    margin: 20px;
 }
 
 .leaflet-popup-tip {
@@ -196,15 +245,19 @@ body, html {
 }
 
 .popup-content {
-    font-family: Verdana, sans-serif;
-    font-size: 12px;
+    font-family: Roboto, sans-serif;
+    font-size: 16px;
     text-align: center;
     padding: 10px;
 }
 
 .popup-content h3 {
     margin: 5px 0;
-    font-weight: bold;
+    text-align: center;
+}
+
+.popup-content th {
+    font-weight: normal;
 }
 
 /* Tab-Buttons */
@@ -217,24 +270,24 @@ body, html {
 
 .tab-button {
     padding: 6px 12px;
-    background-color: rgba(0, 100, 160, 0.9);
-    color: white;
+    background-color: rgba(0, 128, 192, 0.4);
+    color: rgb(1, 43, 63);
     border: none;
     border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .tab-button:hover {
-    background-color: rgba(0, 80, 140, 1);
+    background-color: rgba(0, 150, 255, 0.4);
 }
 
 .tab-button.active {
-    background-color: rgba(0, 60, 120, 1);
-    font-weight: bold;
+    background-color: rgba(0, 150, 255, 0.4);
 }
 
-/* Tabelle 1*/
+/* Tabelle */
 .table-container table {
     width: 100%;
     border-collapse: collapse;
@@ -242,8 +295,10 @@ body, html {
 }
 
 .table-container th {
-    background-color: rgba(0, 128, 192, 0.8);
-    color: white;
+    background-color: rgba(0, 128, 192, 0.4);
+    color: rgb(1, 43, 63);
+    font-size: 16px;
+    font-weight: normal;
     padding: 10px;
     text-align: center;
 }
@@ -252,6 +307,7 @@ body, html {
     background-color: rgba(255, 255, 255, 0.2);
     padding: 10px;
     text-align: center;
+    font-size: 16px;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
