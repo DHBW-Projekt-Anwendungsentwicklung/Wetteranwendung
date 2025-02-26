@@ -61,7 +61,8 @@ map.on('click', function (e) {
                 autoPan: true,                     // Popup verschieben, damit es in der Karte bleibt
                 keepInView: true,                 // Falls nötig, Karte verschieben, damit Popup sichtbar bleibt
                 autoPanPaddingTopLeft: L.point(50, 50),
-                autoPanPaddingBottomRight: L.point(50, 50)
+                autoPanPaddingBottomRight: L.point(50, 50),
+                maxWidth: Infinity
             }
         )
         .openPopup();
@@ -101,15 +102,21 @@ function findStationsInRadius() {
         radius: radius * 1000
     }).addTo(map);
 
-    // Karte auf diesen Bereich zoomen
-    map.setView([lat, lon], 5);
+    // Karte an den Kreis anpassen (automatisch hinein- oder hinauszoomen):
+    map.fitBounds(radiusCircle.getBounds(), {
+        padding: [20, 20] // optionaler innerer Rand in Pixeln
+    });
 }
 
 // Popup-Inhalt generieren
 function generatePopupContent(lat, lon) {
     return `
         <div class="popup-content">
-            <h3>Position: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}</h3>
+            <h3>
+                Position:<br>
+                Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}
+            </h3>
+            </div>
             <div class="tab-container">
                 <button class="tab-button active" onclick="showTab('table')">Tabelle</button>
                 <button class="tab-button" onclick="showTab('chart')">Grafik</button>
