@@ -19,7 +19,7 @@ map.setMaxBounds(bounds);
 
 // TileLayer hinzufügen (OpenStreetMap)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
 // Aktuellen Wert des Radius-Range-Inputs anzeigen
@@ -28,12 +28,12 @@ function updateRadiusValue() {
     document.getElementById('radiusValue').textContent = radius;
 }
 
-// Globale Variablen für Marker (Ping) und Circle (Radius)
+// Globale Variablen für Marker und Kreis
 var currentPing = null;
 var radiusCircle = null;
 var stationMarkers = [];
 
-// Eigenes Icon für den Pin
+// Eigenes Icon für den roten Pin
 var customIcon = L.icon({
     iconUrl: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
     iconSize: [15, 25],
@@ -41,35 +41,39 @@ var customIcon = L.icon({
     popupAnchor: [0, -12]
 });
 
-// Klick-Event auf der Karte
+// Eigenes Icon für die blauen Stations-Pins
+var blueIcon = L.icon({
+    iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/88/Map_marker.svg',
+    iconSize: [20, 30],
+    iconAnchor: [10, 30]
+});
+
+// Klick-Event auf der Karte für den roten Pin
 map.on('click', function (e) {
+    // Entferne den vorherigen roten Pin
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
+
+    // Entferne den vorherigen Kreis
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
     }
 
-    currentPing = L.marker(e.latlng, { icon: customIcon })
-        .addTo(map)
-        .bindPopup(
-            generatePopupContent(e.latlng.lat, e.latlng.lng),
-            {
-                autoPan: true,
-                keepInView: true,
-                autoPanPaddingTopLeft: L.point(50, 50),
-                autoPanPaddingBottomRight: L.point(50, 50),
-                maxWidth: Infinity
-            }
-        )
-        .openPopup();
+    // Entferne alle vorherigen blauen Marker
+    stationMarkers.forEach(marker => map.removeLayer(marker));
+    stationMarkers = [];
 
+    // Neuen roten Pin setzen
+    currentPing = L.marker(e.latlng, { icon: customIcon }).addTo(map);
+
+    // Eingabefelder aktualisieren
     document.getElementById('latitude').value = e.latlng.lat.toFixed(4);
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
-// Funktion zum Anzeigen des Kreises
+// Funktion zum Finden und Anzeigen von Stationen im Radius
 function findStationsInRadius() {
     var lat = parseFloat(document.getElementById("latitude").value);
     var lon = parseFloat(document.getElementById("longitude").value);
@@ -81,6 +85,7 @@ function findStationsInRadius() {
         return;
     }
 
+    // Entferne alten Kreis und alte Marker
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
@@ -88,6 +93,7 @@ function findStationsInRadius() {
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
+    // Kreis zeichnen
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
@@ -95,87 +101,80 @@ function findStationsInRadius() {
         radius: radius * 1000
     }).addTo(map);
 
+    // Karte an den Kreis anpassen
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
+    // Ajax-Request an Django
     fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
         .then(response => response.json())
         .then(data => {
             console.log("Gefundene Stationen:", data);
 
+            // Marker setzen
             data.forEach(station => {
-                var marker = L.marker([station.latitude, station.longitude])
-                    .addTo(map)
-                    .bindPopup(`
-                        <b>${station.station_id}</b><br>
-                        ${station.name || "No Name"}<br>
-                        Lat: ${station.latitude}, Lon: ${station.longitude}
-                    `);
+                var marker = L.marker([station.latitude, station.longitude], { icon: blueIcon }).addTo(map);
                 stationMarkers.push(marker);
             });
+
+            // Stationen in der linken Sidebar anzeigen
+            displayStationsInSidebar(data);
         })
         .catch(error => {
             console.error("Fehler beim Abrufen der Stationsdaten:", error);
         });
 }
 
-// Popup-Inhalt generieren
-function generatePopupContent(lat, lon) {
-    return `
-        <div class="popup-content">
-            <h3>
-                Position:<br>
-                Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}
-            </h3>
-            </div>
-            <div class="tab-container">
-                <button class="tab-button active" onclick="showTab('table')">Tabelle</button>
-                <button class="tab-button" onclick="showTab('chart')">Grafik</button>
-            </div>
-            <div id="table" class="tab-content active table-container">
-                <table>
-                    <tr>
-                        <th>Jahr</th>
-                        <th>Mittelwert</th>
-                        <th>Frühling</th>
-                        <th>Sommer</th>
-                        <th>Herbst</th>
-                        <th>Winter</th>
-                    </tr>
-                    <tr>
-                        <td>2022</td>
-                        <td>10°C</td>
-                        <td>min: 8°C<br>max: 18°C</td>
-                        <td>min: 20°C<br>max: 30°C</td>
-                        <td>min: 9°C<br>max: 15°C</td>
-                        <td>min: -2°C<br>max: 8°C</td>
-                    </tr>
-                    <tr>
-                        <td>2023</td>
-                        <td>12°C</td>
-                        <td>min: 10°C<br>max: 20°C</td>
-                        <td>min: 22°C<br>max: 32°C</td>
-                        <td>min: 10°C<br>max: 16°C</td>
-                        <td>min: 0°C<br>max: 9°C</td>
-                    </tr>
-                </table>
-            </div>
-            <div id="chart" class="tab-content" style="display:none;">
-                <p>Grafik anzeigen!</p>
-            </div>
-        </div>
-    `;
-}
+// Zeigt gefundene Stationen in der linken Sidebar an
+function displayStationsInSidebar(data) {
+    // Vorherige Liste entfernen
+    var oldList = document.getElementById("stationList");
+    if (oldList) {
+        oldList.remove();
+    }
 
-// Tabs wechseln (Tabelle / Grafik)
-function showTab(tabId) {
-    var tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(function (tab) {
-        tab.style.display = 'none';
+    // Neues Container-Element
+    var stationList = document.createElement("div");
+    stationList.id = "stationList";
+
+    // Überschrift "Ergebnisse:" hinzufügen
+    var headingField = document.createElement("div");
+    headingField.className = "field results-heading";
+
+    var headingLabel = document.createElement("label");
+    headingLabel.textContent = "Ergebnisse:";
+
+    headingField.appendChild(headingLabel);
+    stationList.appendChild(headingField);
+
+    // Stationen durchgehen und anzeigen
+    data.forEach(function (station, index) {
+        var item = document.createElement("div");
+        item.className = "station-item";
+        item.innerHTML = `
+            <h4>Station ${index + 1}:</h4>
+            <p><b>Name:</b> ${station.name || 'No Name'}</p>
+            <p><b>ID:</b> ${station.station_id}</p>
+            <p><b>Breitengrad:</b> ${station.latitude}</p>
+            <p><b>Längengrad:</b> ${station.longitude}</p>
+        `;
+        stationList.appendChild(item);
     });
-    document.getElementById(tabId).style.display = 'block';
+
+    // Scrollbar, wenn mehr als 3 Einträge
+    if (data.length > 3) {
+        stationList.style.maxHeight = "300px";
+        stationList.style.overflowY = "auto";
+    } else {
+        stationList.style.maxHeight = "none";
+        stationList.style.overflowY = "visible";
+    }
+
+    // In den Sidebar einfügen
+    var sidebar = document.getElementById("sidebar");
+    sidebar.appendChild(stationList);
 }
 
-// Dropdowns für Jahresauswahl befüllen
+// Dropdowns für Jahresauswahl befüllen (mit voreingestelltem Zeitraum 2000-2025)
 function populateYearDropdowns() {
     var yearFrom = document.getElementById('yearFrom');
     var yearTo = document.getElementById('yearTo');
@@ -192,6 +191,7 @@ function populateYearDropdowns() {
         yearTo.appendChild(optionTo);
     }
 
+    // Standardwerte setzen (Zeitraum 2000 - 2025 beibehalten)
     yearFrom.value = 2000;
     yearTo.value = 2025;
 }
@@ -209,4 +209,5 @@ function validateMaxStations() {
     }
 }
 
+// Beim Laden der Seite das Dropdown befüllen
 populateYearDropdowns();
