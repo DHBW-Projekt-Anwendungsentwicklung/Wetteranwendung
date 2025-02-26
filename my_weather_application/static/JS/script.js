@@ -187,5 +187,18 @@ function populateYearDropdowns() {
     yearTo.value = 2025;
 }
 
+function validateMaxStations() {
+    var input = document.getElementById("maxStations");
+    var value = parseInt(input.value, 10);  // Zahl aus Eingabe holen
+
+    if (!isNaN(value)) { // Prüfen, ob überhaupt eine Zahl eingegeben wurde
+        if (value > 10) {
+            input.value = 10;  // Falls größer als 10, auf 10 setzen
+        } else if (value < 1) {
+            input.value = 1;   // Falls kleiner als 1, auf 1 setzen
+        }
+    }
+}
+
 // Beim Laden der Seite das Dropdown befüllenn
 populateYearDropdowns();

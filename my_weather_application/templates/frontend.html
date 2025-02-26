@@ -42,8 +42,9 @@
 
         <div class="field">
             <label for="maxStations">Anzahl Ergebnisse:</label>
-            <input type="text" id="maxStations" placeholder="z.B. 5" min="1" step="1">
+            <input type="number" id="maxStations" placeholder="z.B. 5" min="1" max="10" step="1" onblur="validateMaxStations()">
         </div>
+
         <button onclick="findStationsInRadius()">Suche Wetterstationen</button>
     </div>
 

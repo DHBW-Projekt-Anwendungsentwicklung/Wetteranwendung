@@ -1,3 +1,9 @@
+/*
+   style.css
+   -- Wichtige Änderung:
+   Alle Farben im Sidebar-Bereich sind nun auf Weiß (#FFF) gesetzt.
+*/
+
 body, html {
     margin: 0;
     padding: 0;
@@ -24,6 +30,8 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    /* Hier die globale Farbe auf Weiß setzen */
+    color: #fff;
 }
 
 @media (max-width: 1200px) {
@@ -43,7 +51,8 @@ body, html {
 }
 
 #sidebar h2 {
-    color: rgb(255, 255, 255);
+    /* Überschrift in Weiß */
+    color: #fff;
     text-align: center;
     margin-bottom: 20px;
 }
@@ -59,18 +68,21 @@ body, html {
 
 #sidebar label {
     font-size: 20px;
-    color: rgb(1, 43, 63);
+    /* Label-Farbe auf Weiß */
+    color: #fff;
     display: block;
     margin-bottom: 5px;
 }
 
 #radiusValue {
     font-size: 20px;
-    color: rgb(1, 43, 63);
+    /* Auch hier Weiß */
+    color: #fff;
     text-align: center;
     margin-top: 5px;
 }
 
+/* Inputs und Selects im Sidebar */
 #sidebar input[type="text"],
 #sidebar select {
     width: 100%;
@@ -79,18 +91,21 @@ body, html {
     border: none;
     border-radius: 4px;
     background-color: rgba(0, 128, 192, 0.4);
-    color: rgb(1, 43, 63);
+    /* Text-Farbe auf Weiß */
+    color: #fff;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 #sidebar select option {
     background-color: rgba(0, 0, 0, 0.184);
-    color: rgb(1, 43, 63);
+    /* Schriftfarbe in den Optionen auch Weiß */
+    color: #fff;
 }
 
+/* Placeholder-Farbe auf Weiß */
 #sidebar input[type="text"]::placeholder {
-    color: rgb(2, 63, 94);
-    opacity: 0.6;
+    color: #fff;
+    opacity: 0.7; /* Etwas Transparenz, damit man es sieht */
 }
 
 #sidebar input[type="text"]:hover,
@@ -106,6 +121,7 @@ body, html {
     transform: scale(1.03);
 }
 
+/* Slider */
 #sidebar input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
@@ -137,14 +153,16 @@ body, html {
     cursor: pointer;
 }
 
+/* Button */
 #sidebar button {
     width: 100%;
-    padding: 10px;
+    padding: 8px 16px;
     background-color: #0f8ba1;
-    color: rgb(1, 43, 63);
-    border: none;
+    /* Schriftfarbe auf Weiß */
+    color: #fff;
+    border: 1px solid black;
     border-radius: 5px;
-    font-size: 22px;
+    font-size: 20px;
     cursor: pointer;
     font-family: Roboto, sans-serif;
     transition: background-color 0.2s ease-in-out;
@@ -155,6 +173,7 @@ body, html {
     transform: scale(1.03);
 }
 
+/* Zeitraum-Eingabe */
 .year-container {
     display: flex;
     align-items: center;
@@ -168,7 +187,8 @@ body, html {
     border: none;
     border-radius: 4px;
     background-color: rgba(0, 150, 255, 0.4);
-    color: black;
+    /* Schriftfarbe weiß */
+    color: #fff;
     text-align: center;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
@@ -186,16 +206,15 @@ body, html {
 
 .year-container span {
     color: white;
-    font-weight: bold;
 }
-
 
 .slider-labels {
     display: flex;
     justify-content: space-between;
     width: 100%;
     font-size: 18px;
-    color: rgb(1, 43, 63);
+    /* Text-Farbe weiß */
+    color: #fff;
     margin-top: 5px;
 }
 
@@ -267,7 +286,7 @@ body, html {
     background-color: rgba(0, 150, 255, 0.4);
 }
 
-/* Tabelle 1*/
+/* Tabelle */
 .table-container table {
     width: 100%;
     border-collapse: collapse;
@@ -293,4 +312,32 @@ body, html {
 
 .table-container tr:nth-child(even) td {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar input[type="number"] {
+    width: 100%;
+    padding: 6px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: rgba(0, 128, 192, 0.4);
+    color: #fff;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#sidebar input[type="number"]::placeholder {
+    color: #fff;
+    opacity: 0.7;
+}
+
+#sidebar input[type="number"]:hover {
+    background-color: rgba(0, 150, 255, 0.4);
+    transform: scale(1.02);
+}
+
+#sidebar input[type="number"]:focus {
+    outline: none;
+    background-color: rgba(0, 175, 250, 0.6);
+    transform: scale(1.03);
 }
