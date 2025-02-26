@@ -1,4 +1,4 @@
-/* 
+/*
    style.css
    -- Wichtige Änderung:
    Alle Farben im Sidebar-Bereich sind nun auf Weiß (#FFF) gesetzt.
@@ -206,7 +206,6 @@ body, html {
 
 .year-container span {
     color: white;
-    font-weight: bold;
 }
 
 .slider-labels {
@@ -313,4 +312,32 @@ body, html {
 
 .table-container tr:nth-child(even) td {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar input[type="number"] {
+    width: 100%;
+    padding: 6px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: rgba(0, 128, 192, 0.4);
+    color: #fff;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#sidebar input[type="number"]::placeholder {
+    color: #fff;
+    opacity: 0.7;
+}
+
+#sidebar input[type="number"]:hover {
+    background-color: rgba(0, 150, 255, 0.4);
+    transform: scale(1.02);
+}
+
+#sidebar input[type="number"]:focus {
+    outline: none;
+    background-color: rgba(0, 175, 250, 0.6);
+    transform: scale(1.03);
 }

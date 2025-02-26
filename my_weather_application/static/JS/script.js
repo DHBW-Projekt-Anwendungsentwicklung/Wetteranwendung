@@ -187,5 +187,65 @@ function populateYearDropdowns() {
     yearTo.value = 2025;
 }
 
+function validateMaxStations() {
+    var input = document.getElementById("maxStations");
+    var value = parseInt(input.value, 10);  // Zahl aus Eingabe holen
+
+    if (!isNaN(value)) { // Prüfen, ob überhaupt eine Zahl eingegeben wurde
+        if (value > 10) {
+            input.value = 10;  // Falls größer als 10, auf 10 setzen
+        } else if (value < 1) {
+            input.value = 1;   // Falls kleiner als 1, auf 1 setzen
+        }
+    }
+}
+
 // Beim Laden der Seite das Dropdown befüllenn
 populateYearDropdowns();
+
+function findStationsInRadius() {
+    // Lese Eingaben aus dem Frontend (Breite, Länge, Radius, maxStations etc.)
+    var lat = document.getElementById("latitude").value;
+    var lon = document.getElementById("longitude").value;
+    var radius = document.getElementById("radius").value;
+    var maxStations = document.getElementById("maxStations").value;
+
+    // An Deine Django-Route per fetch
+    fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Gefundene Stationen:", data);
+
+            // 'data' ist jetzt ein Array von Station-Objekten. Beispiel:
+            // [
+            //   {
+            //     "station_id": "ACW00011604",
+            //     "latitude": -14.2167,
+            //     "longitude": -170.5667,
+            //     "elevation": 30.0,
+            //     "state": null,
+            //     "name": "TAGA  ...",
+            //   },
+            //   ...
+            // ]
+
+            // Falls Du beim Klick schon einen alten Marker/Circle entfernen willst,
+            // kannst du hier Marker-Entfernung vornehmen...
+
+            // Jetzt neue Marker hinzufügen:
+            data.forEach(station => {
+                // z.B. Leaflet-Marker
+                var marker = L.marker([station.latitude, station.longitude])
+                    .addTo(map)  // 'map' ist dein bereits initialisiertes Leaflet-Kartenobjekt
+                    .bindPopup(`
+                        <b>${station.station_id}</b><br>
+                        ${station.name || "No Name"}<br>
+                        Lat: ${station.latitude}, Lon: ${station.longitude}
+                    `);
+            });
+        })
+        .catch(error => {
+            console.error("Fehler beim Abrufen der Stationsdaten:", error);
+        });
+}
+

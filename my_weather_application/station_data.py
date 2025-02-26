@@ -1,0 +1,55 @@
+# my_weather_application/station_data.py
+
+import requests
+
+# Globale Variable, in der wir die Stationsdaten im RAM halten
+STATIONS = []
+
+def load_station_data():
+    """
+    Lädt ghcnd-stations.txt von NOAA und parst sie in die globale Liste STATIONS.
+    """
+    url = "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
+    print(f"Lade Stationsdaten von {url} ...")
+
+    response = requests.get(url)
+    response.raise_for_status()  # Werfe Fehler, wenn das Laden scheitert
+
+    lines = response.text.splitlines()
+
+    parsed_stations = []
+    for line in lines:
+        # Datei-Format: siehe https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
+        # Wir stellen nur sicher, dass die Zeile mindestens 40 Zeichen hat:
+        if len(line) < 40:
+            continue
+
+        station_id = line[0:11].strip()
+        lat = float(line[12:20].strip())
+        lon = float(line[21:30].strip())
+
+        # Höhenmeter, ggf. -999.9 als "fehlend"
+        try:
+            elevation_val = float(line[31:37].strip())
+            if elevation_val < -900:
+                elevation_val = None
+        except ValueError:
+            elevation_val = None
+
+        state = line[38:40].strip() or None
+        name  = line[41:71].strip() or None
+
+        station_dict = {
+            "station_id": station_id,
+            "latitude":   lat,
+            "longitude":  lon,
+            "elevation":  elevation_val,
+            "state":      state,
+            "name":       name,
+        }
+        parsed_stations.append(station_dict)
+
+    # In unsere globale Liste schreiben
+    global STATIONS
+    STATIONS = parsed_stations
+    print(f"Fertig. {len(STATIONS)} Stationen geladen.")

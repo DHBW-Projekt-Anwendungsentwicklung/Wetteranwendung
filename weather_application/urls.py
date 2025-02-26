@@ -19,6 +19,7 @@ from django.urls import path, include
 from my_weather_application.views import my_weather_application
 
 urlpatterns = [
-    path('', my_weather_application),
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
+    # Statt path('', my_weather_application) hier ein include
+    path('', include('my_weather_application.urls')),
 ]
