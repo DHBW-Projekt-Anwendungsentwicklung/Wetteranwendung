@@ -308,6 +308,12 @@ body, html {
     color: #fff;
 }
 
+.station-item:hover {
+    background-color: rgba(0, 150, 255, 0.4);
+    transform: scale(1.02);
+}
+
+
 /* ------------------------------------------
    NEU: Nur das Leaflet-Tooltip
    (Weil du "bindTooltip" statt "bindPopup" verwendest)

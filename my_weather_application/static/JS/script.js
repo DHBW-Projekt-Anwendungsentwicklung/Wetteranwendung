@@ -110,7 +110,8 @@ function findStationsInRadius() {
         data.forEach((station, index) => {
             var marker = L.marker([station.latitude, station.longitude], {
                 icon: blueIcon,
-                stationId: station.station_id
+                stationId: station.station_id,
+                stationName: station.name || "Unbekannt"
             }).addTo(map)
             .bindTooltip(
                 `Station ${index + 1}: ${station.name || "No Name"}`,
@@ -192,7 +193,10 @@ function loadStationCalculations(stationId) {
             return;
         }
 
-        let popupHtml = buildCalculationsPopupHtml(data, stationId);
+        let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
+        let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
+        let popupHtml = buildCalculationsPopupHtml(data, stationId, stationName);
+
 
         let stationMarker = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
 
@@ -210,8 +214,8 @@ function loadStationCalculations(stationId) {
 }
 
 // Baut HTML für das Berechnungs-Popup
-function buildCalculationsPopupHtml(statsArray, stationId) {
-    let html = `<div class="popup-header">Wetterstation: ${stationId}</div>
+function buildCalculationsPopupHtml(statsArray, stationId, stationName) {
+    let html = `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
                 <div class="popup-table-container">
                 <table class="popup-table">
                 <thead>
