@@ -292,6 +292,7 @@ body, html {
     padding: 10px;
     margin-bottom: 10px;
     text-align: left;
+    cursor: pointer;
 }
 
 .station-item h4 {
