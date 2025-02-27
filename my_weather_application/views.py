@@ -13,7 +13,6 @@ from collections import defaultdict
 def my_weather_application(request):
     return render(request, 'frontend.html')
 
-# 1) Distanzberechnung für die Stationssuche
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
@@ -24,7 +23,6 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     return R * c
 
-# 2) Stationssuche im Umkreis
 def stations_in_radius_view(request):
     try:
         lat = float(request.GET.get('latitude', 0))
@@ -34,7 +32,6 @@ def stations_in_radius_view(request):
     except ValueError:
         return JsonResponse({"error": "Ungültige Parameter."}, status=400)
 
-    # Filter
     nearest_stations = []
     for station in STATIONS:
         distance = haversine(lat, lon, station["latitude"], station["longitude"])
@@ -58,14 +55,11 @@ def stations_in_radius_view(request):
         })
     return JsonResponse(response_data, safe=False)
 
-# -----------------------------------------------------------
-# NEU: CSV.GZ-Auswertung
-# -----------------------------------------------------------
+# --------------------------------------
+# CSV.GZ-Auswertung -> TMIN/TMAX Jahreszeiten
+# --------------------------------------
 
 def station_calculations_view(request):
-    """
-    Lädt CSV.GZ (statt .dly) von NOAA by_station, parst TMIN/TMAX und gibt Jahresauswertungen zurück.
-    """
     station_id = request.GET.get('station_id')
     if not station_id:
         return JsonResponse({"error": "No station_id provided"}, status=400)
@@ -79,25 +73,15 @@ def station_calculations_view(request):
 
     local_file = download_csv_if_needed(station_id)
     if not local_file:
-        # Keine Datei => leeres Array statt Fehler
         return JsonResponse([], safe=False)
 
-    # CSV parsen
     daily_records = parse_ghcn_csv_gz(local_file)
-
-    # Filter Zeitraum
     daily_records = [r for r in daily_records if year_from <= r["year"] <= year_to]
 
-    # Jahresauswertung
     stats = calc_yearly_stats(daily_records)
     return JsonResponse(stats, safe=False)
 
 def download_csv_if_needed(station_id):
-    """
-    Holt https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/{station_id}.csv.gz
-    und speichert in data_cache/{station_id}.csv.gz
-    Gibt Pfad zurück oder None, wenn Download fehlschlägt.
-    """
     cache_dir = os.path.join(os.path.dirname(__file__), "data_cache")
     os.makedirs(cache_dir, exist_ok=True)
 
@@ -114,50 +98,34 @@ def download_csv_if_needed(station_id):
         if resp.status_code == 200 and len(resp.content) > 0:
             with open(local_path, "wb") as f:
                 f.write(resp.content)
-            print(f"Gecached: {local_path}")
             return local_path
         else:
-            print(f"Keine Daten: HTTP {resp.status_code}, length={len(resp.content)}")
             return None
     except Exception as e:
         print(f"Fehler bei Download: {e}")
         return None
 
 def parse_ghcn_csv_gz(filepath):
-    """
-    Liest CSV.GZ mit folgender Struktur:
-    ID,DATE,ELEMENT,DATA VALUE,M-FLAG,Q-FLAG,S-FLAG,OBS-TIME
-    z.B.:
-    AEM00041194,19290101,PRCP,0,,,,
-    AEM00041194,19290101,TMAX,278,,,,
-    ...
-    => extrahiert TMIN/TMAX => daily_records
-    GHCN: T in Zehntel°C => also z.B. 278 => 27.8°C
-    """
     records = []
     with gzip.open(filepath, "rt") as f:
         reader = csv.reader(f)
         for row in reader:
-            # row: [station_id, date, element, value, m_flag, q_flag, s_flag, obs_time]
             if len(row) < 4:
                 continue
             station = row[0].strip()
-            date_str = row[1].strip()  # YYYYMMDD
-            element = row[2].strip()   # TMIN, TMAX, ...
-            val_str = row[3].strip()
-            if not (element == "TMIN" or element == "TMAX"):
-                # Wir interessieren uns nur für TMIN/TMAX
+            date_str = row[1].strip()
+            element  = row[2].strip()
+            val_str  = row[3].strip()
+
+            if element not in ["TMIN", "TMAX"] or len(date_str) != 8:
                 continue
 
-            # date_str => year,month,day
-            if len(date_str) != 8:
-                continue
             y = int(date_str[0:4])
             m = int(date_str[4:6])
             d = int(date_str[6:8])
 
             try:
-                val = int(val_str)/10.0  # Zehntel °C -> °C
+                val = int(val_str)/10.0
             except ValueError:
                 val = None
 
@@ -173,11 +141,6 @@ def parse_ghcn_csv_gz(filepath):
     return records
 
 def calc_yearly_stats(daily_records):
-    """
-    daily_records => TMIN/TMAX
-    => wir berechnen TAVG pro Tag => (TMIN+TMAX)/2
-    => Jahresmittel => Saisons
-    """
     data_by_year = defaultdict(list)
     for r in daily_records:
         data_by_year[r["year"]].append(r)
@@ -185,46 +148,32 @@ def calc_yearly_stats(daily_records):
     results = []
     for year in sorted(data_by_year.keys()):
         entries = data_by_year[year]
-        tmin_map = {}
-        tmax_map = {}
+
+        tmin_list = []
+        tmax_list = []
+
+        seasons = {"spring": [], "summer": [], "autumn": [], "winter": []}
+
         for e in entries:
             if e["element"] == "TMIN":
-                tmin_map[(e["month"], e["day"])] = e["value"]
+                tmin_list.append(e["value"])
             elif e["element"] == "TMAX":
-                tmax_map[(e["month"], e["day"])] = e["value"]
+                tmax_list.append(e["value"])
 
-        daily_tavg = []
-        spring_vals = []
-        summer_vals = []
-        autumn_vals = []
-        winter_vals = []
+            season_key = "winter" if e["month"] in [12,1,2] else \
+                         "spring" if e["month"] in [3,4,5] else \
+                         "summer" if e["month"] in [6,7,8] else "autumn"
+            seasons[season_key].append(e["value"])
 
-        for (m,d), min_val in tmin_map.items():
-            if (m,d) in tmax_map:
-                max_val = tmax_map[(m,d)]
-                tavg = (min_val + max_val)/2.0
-                daily_tavg.append(tavg)
+        def season_avg(values):
+            return f"min: {min(values):.1f}°C<br>max: {max(values):.1f}°C" if values else "Keine Daten"
 
-                # Saisons: 3..5, 6..8, 9..11, 12/1/2
-                if m in [3,4,5]:
-                    spring_vals.append(tavg)
-                elif m in [6,7,8]:
-                    summer_vals.append(tavg)
-                elif m in [9,10,11]:
-                    autumn_vals.append(tavg)
-                else:
-                    winter_vals.append(tavg)
-
-        if daily_tavg:
-            mean_year = sum(daily_tavg)/len(daily_tavg)
-            def season_minmax(vals):
-                return f"min:{min(vals):.1f}, max:{max(vals):.1f}" if vals else "Keine Daten"
-            results.append({
-                "year": year,
-                "yearly_mean": round(mean_year,1),
-                "spring": season_minmax(spring_vals),
-                "summer": season_minmax(summer_vals),
-                "autumn": season_minmax(autumn_vals),
-                "winter": season_minmax(winter_vals),
-            })
+        results.append({
+            "year": year,
+            "yearly_min_mean": f"min: {sum(tmin_list)/len(tmin_list):.1f}°C<br>max: {sum(tmax_list)/len(tmax_list):.1f}°C" if tmin_list and tmax_list else "Keine Daten",
+            "spring": season_avg(seasons["spring"]),
+            "summer": season_avg(seasons["summer"]),
+            "autumn": season_avg(seasons["autumn"]),
+            "winter": season_avg(seasons["winter"]),
+        })
     return results
