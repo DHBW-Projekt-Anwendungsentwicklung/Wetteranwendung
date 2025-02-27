@@ -10,18 +10,21 @@ import gzip
 import csv
 from collections import defaultdict
 
+
 def my_weather_application(request):
     return render(request, 'frontend.html')
+
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lon2 - lon1)
-    a = (math.sin(dphi/2)**2 +
-         math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2)
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    a = (math.sin(dphi / 2) ** 2 +
+         math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
+
 
 def stations_in_radius_view(request):
     """
@@ -54,15 +57,16 @@ def stations_in_radius_view(request):
         st = item["station"]
         response_data.append({
             "station_id": st["station_id"],
-            "name":       st["name"],
-            "latitude":   st["latitude"],
-            "longitude":  st["longitude"],
+            "name": st["name"],
+            "latitude": st["latitude"],
+            "longitude": st["longitude"],
             "distance_km": round(item["distance"], 2)
         })
     return JsonResponse(response_data, safe=False)
 
+
 # -----------------------------------------------------------
-# NEU: CSV.GZ-Auswertung -> TMIN/TMAX => pro Jahr + Jahreszeiten
+# CSV.GZ-Auswertung -> TMIN/TMAX => pro Jahr + Jahreszeiten
 # -----------------------------------------------------------
 
 def station_calculations_view(request):
@@ -71,8 +75,18 @@ def station_calculations_view(request):
     Berechnet:
        - yearly_min_mean (Durchschnitt aller TMIN im Jahr)
        - yearly_max_mean (Durchschnitt aller TMAX im Jahr)
-       - min/max pro Jahreszeit basierend auf Tagesmittel (TAVG=(TMIN+TMAX)/2)
-    Gibt array mit {year, yearly_min_mean, yearly_max_mean, spring, summer, autumn, winter}.
+       - saisonale Min/Max (Winter, Frühling, Sommer, Herbst)
+         -> Winter(Y) = Dez(Y-1) + Jan(Y) + Feb(Y)
+    Gibt ein Array zurück mit:
+       [
+         {
+           "year": 2020,
+           "yearly_min_mean": "...",
+           "spring": "...",
+           ...
+         },
+         ...
+       ]
     """
     station_id = request.GET.get('station_id')
     if not station_id:
@@ -80,25 +94,31 @@ def station_calculations_view(request):
 
     try:
         year_from = int(request.GET.get('yearFrom', 1800))
-        year_to   = int(request.GET.get('yearTo', 2025))
+        year_to = int(request.GET.get('yearTo', 2025))
     except ValueError:
         year_from = 1800
-        year_to   = 2025
+        year_to = 2025
 
     local_file = download_csv_if_needed(station_id)
     if not local_file:
         # Keine Daten => leeres Array
         return JsonResponse([], safe=False)
 
-    # CSV parsen
-    daily_records = parse_ghcn_csv_gz(local_file)
+    # 1) Gesamte CSV parsen
+    all_records = parse_ghcn_csv_gz(local_file)
 
-    # Jahr-Filter
-    daily_records = [r for r in daily_records if year_from <= r["year"] <= year_to]
+    # 2) Filter: Wir nehmen ab (year_from - 1), damit der Dez des Vorjahres
+    #    für das "erste" Jahr im Bereich verfügbar ist.
+    #    Bis year_to reicht, um die Daten nicht unnötig zu vergrößern.
+    daily_records = [
+        r for r in all_records
+        if (year_from - 1) <= r["year"] <= year_to
+    ]
 
-    # Jahresauswertung
-    stats = calc_yearly_stats(daily_records)
+    # 3) Jahresstatistiken berechnen
+    stats = calc_yearly_stats(daily_records, year_from, year_to)
     return JsonResponse(stats, safe=False)
+
 
 def download_csv_if_needed(station_id):
     """
@@ -130,12 +150,13 @@ def download_csv_if_needed(station_id):
         print(f"Fehler bei Download: {e}")
         return None
 
+
 def parse_ghcn_csv_gz(filepath):
     """
     CSV.GZ: ID,DATE,ELEMENT,DATA VALUE,...
     TMIN/TMAX => value in Zehntel-Grad => /10
-    z.B. "ACW00011604,20210101,TMAX,255,..."
-    => year=2021, month=01, day=01, element="TMAX", value=25.5
+    Beispiel: "ACW00011604,20210101,TMAX,255,..."
+      => year=2021, month=01, day=01, element="TMAX", value=25.5
     """
     records = []
     with gzip.open(filepath, "rt") as f:
@@ -145,10 +166,10 @@ def parse_ghcn_csv_gz(filepath):
                 continue
             station = row[0].strip()
             date_str = row[1].strip()  # YYYYMMDD
-            element  = row[2].strip()  # TMIN/TMAX
-            val_str  = row[3].strip()
+            element = row[2].strip()  # TMIN/TMAX
+            val_str = row[3].strip()
 
-            if not (element == "TMIN" or element == "TMAX"):
+            if element not in ("TMIN", "TMAX"):
                 continue
             if len(date_str) != 8:
                 continue
@@ -158,7 +179,7 @@ def parse_ghcn_csv_gz(filepath):
             d = int(date_str[6:8])
 
             try:
-                val = int(val_str)/10.0
+                val = int(val_str) / 10.0
             except ValueError:
                 val = None
 
@@ -173,78 +194,106 @@ def parse_ghcn_csv_gz(filepath):
                 })
     return records
 
-def calc_yearly_stats(daily_records):
+
+def calc_yearly_stats(daily_records, year_from, year_to):
     """
-    Berechnet:
-      - yearly_min_mean = Durchschnitt aller TMIN pro Jahr
-      - yearly_max_mean = Durchschnitt aller TMAX pro Jahr
-      - saisonale min/max auf Basis der Durchschnittswerte der TMIN und TMAX
+    Berechnet Jahres- und Jahreszeitenstatistiken für TMIN und TMAX.
+
+    - yearly_min_mean: Durchschnitt aller TMIN pro Kalenderjahr (Jan-Dez)
+    - yearly_max_mean: Durchschnitt aller TMAX pro Kalenderjahr (Jan-Dez)
+    - Winter(Y) = Dez(Y-1), Jan(Y), Feb(Y)
+    - Frühling: Mär, Apr, Mai
+    - Sommer: Jun, Jul, Aug
+    - Herbst: Sep, Okt, Nov
+
+    Gibt Liste mit Dicts:
+    [
+      {
+        "year": 2020,
+        "yearly_min_mean": "...",
+        "spring": "...",
+        ...
+      },
+      ...
+    ]
+    zurück.
     """
-    data_by_year = defaultdict(list)
+    # Daten nach (year, month) bündeln
+    data_by_year_month = defaultdict(lambda: {"TMIN": [], "TMAX": []})
     for r in daily_records:
-        data_by_year[r["year"]].append(r)
+        y, m = r["year"], r["month"]
+        data_by_year_month[(y, m)][r["element"]].append(r["value"])
 
     results = []
-    for year in sorted(data_by_year.keys()):
-        entries = data_by_year[year]
 
-        # 1) Sammeln TMIN/TMAX
+    # Schleife über den gewünschten Jahresbereich (inklusive year_to)
+    for year in range(year_from, year_to + 1):
+        # 1) Jahresdurchschnittswerte (Jan-Dez)
         tmin_list = []
         tmax_list = []
+        for m in range(1, 13):
+            tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
+            tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
 
-        # 2) Speichern TMIN und TMAX getrennt für Jahreszeiten
-        spring_tmin = []
-        spring_tmax = []
-        summer_tmin = []
-        summer_tmax = []
-        autumn_tmin = []
-        autumn_tmax = []
-        winter_tmin = []
-        winter_tmax = []
+        if tmin_list:
+            yearly_min_mean = round(sum(tmin_list) / len(tmin_list), 1)
+        else:
+            yearly_min_mean = None
 
-        for e in entries:
-            if e["element"] == "TMIN":
-                tmin_list.append(e["value"])
+        if tmax_list:
+            yearly_max_mean = round(sum(tmax_list) / len(tmax_list), 1)
+        else:
+            yearly_max_mean = None
 
-                # Sortierung nach Jahreszeiten für TMIN
-                if e["month"] in [3, 4, 5]:
-                    spring_tmin.append(e["value"])
-                elif e["month"] in [6, 7, 8]:
-                    summer_tmin.append(e["value"])
-                elif e["month"] in [9, 10, 11]:
-                    autumn_tmin.append(e["value"])
-                else:
-                    winter_tmin.append(e["value"])
+        # Hilfsfunktion für min-/max-Text
+        def build_temp_text(min_vals, max_vals):
+            if min_vals and max_vals:
+                return (f"min: {sum(min_vals) / len(min_vals):.1f}°C"
+                        f"<br>max: {sum(max_vals) / len(max_vals):.1f}°C")
+            else:
+                return "Keine Daten"
 
-            elif e["element"] == "TMAX":
-                tmax_list.append(e["value"])
+        # Hilfsfunktion, die Werte für bestimmte (year,month)-Paare mittelt
+        def gather_avg_for_pairs(pairs):
+            tmp_min = []
+            tmp_max = []
+            for (yy, mm) in pairs:
+                tmp_min.extend(data_by_year_month[(yy, mm)]["TMIN"])
+                tmp_max.extend(data_by_year_month[(yy, mm)]["TMAX"])
+            return build_temp_text(tmp_min, tmp_max)
 
-                # Sortierung nach Jahreszeiten für TMAX
-                if e["month"] in [3, 4, 5]:
-                    spring_tmax.append(e["value"])
-                elif e["month"] in [6, 7, 8]:
-                    summer_tmax.append(e["value"])
-                elif e["month"] in [9, 10, 11]:
-                    autumn_tmax.append(e["value"])
-                else:
-                    winter_tmax.append(e["value"])
+        # 2) Jahreszeiten definieren
+        # Winter(Y) = Dez(Y-1) + Jan(Y) + Feb(Y)
+        # => wir rechnen immer (year-1,12), (year,1), (year,2) zusammen,
+        #    damit auch das erste Jahr den Dezember des Vorjahres bekommt!
+        winter_pairs = [
+            (year - 1, 12),
+            (year, 1),
+            (year, 2),
+        ]
 
-        # Jahres-Durchschnitte
-        yearly_min_mean = round(sum(tmin_list)/len(tmin_list), 1) if tmin_list else None
-        yearly_max_mean = round(sum(tmax_list)/len(tmax_list), 1) if tmax_list else None
+        spring_pairs = [(year, 3), (year, 4), (year, 5)]
+        summer_pairs = [(year, 6), (year, 7), (year, 8)]
+        autumn_pairs = [(year, 9), (year, 10), (year, 11)]
 
-        # Funktion zum Berechnen von min/max für eine Jahreszeit
-        def season_avg(vals_min, vals_max):
-            if vals_min and vals_max:
-                return f"min: {sum(vals_min)/len(vals_min):.1f}°C<br>max: {sum(vals_max)/len(vals_max):.1f}°C"
-            return "Keine Daten"
+        winter_str = gather_avg_for_pairs(winter_pairs)
+        spring_str = gather_avg_for_pairs(spring_pairs)
+        summer_str = gather_avg_for_pairs(summer_pairs)
+        autumn_str = gather_avg_for_pairs(autumn_pairs)
+
+        # 3) Ausgabe-Strings für das Jahr
+        if yearly_min_mean is not None and yearly_max_mean is not None:
+            yearly_str = f"min: {yearly_min_mean:.1f}°C<br>max: {yearly_max_mean:.1f}°C"
+        else:
+            yearly_str = "Keine Daten"
 
         results.append({
             "year": year,
-            "yearly_min_mean": f"min: {yearly_min_mean:.1f}°C<br>max: {yearly_max_mean:.1f}°C" if yearly_min_mean is not None and yearly_max_mean is not None else "Keine Daten",
-            "spring": season_avg(spring_tmin, spring_tmax),
-            "summer": season_avg(summer_tmin, summer_tmax),
-            "autumn": season_avg(autumn_tmin, autumn_tmax),
-            "winter": season_avg(winter_tmin, winter_tmax),
+            "yearly_min_mean": yearly_str,
+            "spring": spring_str,
+            "summer": summer_str,
+            "autumn": autumn_str,
+            "winter": winter_str,
         })
+
     return results
