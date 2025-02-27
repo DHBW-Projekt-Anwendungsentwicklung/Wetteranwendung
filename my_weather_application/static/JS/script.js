@@ -48,32 +48,25 @@ var blueIcon = L.icon({
     iconAnchor: [10, 30]
 });
 
-// Klick-Event auf der Karte für den roten Pin
+// Klick auf die Karte => roter Pin
 map.on('click', function (e) {
-    // Entferne den vorherigen roten Pin
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
-
-    // Entferne den vorherigen Kreis
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
     }
-
-    // Entferne alle vorherigen blauen Marker
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
-    // Neuen roten Pin setzen
     currentPing = L.marker(e.latlng, { icon: customIcon }).addTo(map);
 
-    // Eingabefelder aktualisieren
     document.getElementById('latitude').value = e.latlng.lat.toFixed(4);
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
-// Funktion zum Finden und Anzeigen von Stationen im Radius
+// Stationssuche
 function findStationsInRadius() {
     var lat = parseFloat(document.getElementById("latitude").value);
     var lon = parseFloat(document.getElementById("longitude").value);
@@ -85,13 +78,13 @@ function findStationsInRadius() {
         return;
     }
 
-    // -- NEU: Roter Pin anhand der Eingabefelder setzen --
+    // Roter Pin auf Eingabewerte
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
     currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
 
-    // Entferne alten Kreis und alte Marker
+    // Alten Kreis und blaue Marker entfernen
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
@@ -99,7 +92,7 @@ function findStationsInRadius() {
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
-    // Kreis zeichnen
+    // Neuer Kreis
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
@@ -107,21 +100,17 @@ function findStationsInRadius() {
         radius: radius * 1000
     }).addTo(map);
 
-    // Karte an den Kreis anpassen
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
-    // Ajax-Request an Django
     fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
         .then(response => response.json())
         .then(data => {
             console.log("Gefundene Stationen:", data);
 
-            // Marker setzen
             data.forEach((station, index) => {
                 // Blauer Pin
                 var marker = L.marker([station.latitude, station.longitude], { icon: blueIcon })
                     .addTo(map)
-                    // Tooltip mit "Station X: Name"
                     .bindTooltip(
                         `Station ${index + 1}: ${station.name || "No Name"}`,
                         {
@@ -133,7 +122,6 @@ function findStationsInRadius() {
                 stationMarkers.push(marker);
             });
 
-            // Stationen in der linken Sidebar anzeigen
             displayStationsInSidebar(data);
         })
         .catch(error => {
@@ -141,28 +129,22 @@ function findStationsInRadius() {
         });
 }
 
-// Zeigt gefundene Stationen in der linken Sidebar an
+// Zeige Stationen links in der Sidebar
 function displayStationsInSidebar(data) {
-    // Vorherige Liste entfernen
     var oldList = document.getElementById("stationList");
     if (oldList) {
         oldList.remove();
     }
-
-    // Neues Container-Element
     var stationList = document.createElement("div");
     stationList.id = "stationList";
 
-    // Überschrift "Ergebnisse:" hinzufügen
     var headingField = document.createElement("div");
     headingField.className = "field results-heading";
-
     var headingLabel = document.createElement("label");
     headingLabel.textContent = "Ergebnisse:";
     headingField.appendChild(headingLabel);
     stationList.appendChild(headingField);
 
-    // Stationen durchgehen und anzeigen
     data.forEach(function (station, index) {
         var item = document.createElement("div");
         item.className = "station-item";
@@ -173,10 +155,15 @@ function displayStationsInSidebar(data) {
             <p><b>Breitengrad:</b> ${station.latitude}</p>
             <p><b>Längengrad:</b> ${station.longitude}</p>
         `;
+
+        // WICHTIG: Klick => Hol Berechnungen + zeig Popup
+        item.addEventListener('click', () => {
+            loadStationCalculations(station.station_id);
+        });
+
         stationList.appendChild(item);
     });
 
-    // Scrollbar, wenn mehr als 3 Einträge
     if (data.length > 3) {
         stationList.style.maxHeight = "300px";
         stationList.style.overflowY = "auto";
@@ -185,12 +172,84 @@ function displayStationsInSidebar(data) {
         stationList.style.overflowY = "visible";
     }
 
-    // In den Sidebar einfügen
     var sidebar = document.getElementById("sidebar");
     sidebar.appendChild(stationList);
 }
 
-// Dropdowns für Jahresauswahl befüllen (mit voreingestelltem Zeitraum 2000-2025)
+// NEU: Holt vom Backend die Jahres-Berechnungen für station_id und zeigt sie in einem Popup
+function loadStationCalculations(stationId) {
+    let yearFrom = parseInt(document.getElementById('yearFrom').value, 10) || 1800;
+    let yearTo   = parseInt(document.getElementById('yearTo').value, 10)   || 2025;
+
+    fetch(`/station_calculations/?station_id=${stationId}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!Array.isArray(data)) {
+                // Falls das Backend doch ein error-Objekt gibt
+                if (data.error) {
+                    alert("Fehler: " + data.error);
+                } else {
+                    alert("Unbekannter Fehler");
+                }
+                return;
+            }
+            // Hier data ist ein Array
+            if (!data.length) {
+                alert("Keine Daten für diese Station (oder Station hat keine .dly-Datei).");
+                return;
+            }
+            console.log("Berechnete Stats:", data);
+
+            let popupHtml = buildCalculationsPopupHtml(data, stationId);
+            if (currentPing) {
+                currentPing.bindPopup(popupHtml).openPopup();
+            }
+        })
+        .catch(err => {
+            console.error("Fehler beim Laden der Berechnungen:", err);
+        });
+}
+
+
+// Baut aus dem Berechnungs-Array eine HTML-Tabelle oder Text
+function buildCalculationsPopupHtml(statsArray, stationId) {
+    // statsArray = [
+    //   { year:2021, yearly_mean: 7.8, spring:'min:5, max:15', ... },
+    //   { year:2022, yearly_mean: 8.1, spring:'min:4, max:16', ... },
+    //   ...
+    // ]
+    let html = `
+        <div style="text-align:center;">
+            <h3>Auswertung: ${stationId}</h3>
+            <table border="1" style="margin:auto;">
+                <tr>
+                    <th>Jahr</th>
+                    <th>Jahres-Mittel</th>
+                    <th>Frühling</th>
+                    <th>Sommer</th>
+                    <th>Herbst</th>
+                    <th>Winter</th>
+                </tr>
+    `;
+
+    statsArray.forEach(row => {
+        html += `
+            <tr>
+                <td>${row.year}</td>
+                <td>${row.yearly_mean || "?"} °C</td>
+                <td>${row.spring || "?"}</td>
+                <td>${row.summer || "?"}</td>
+                <td>${row.autumn || "?"}</td>
+                <td>${row.winter || "?"}</td>
+            </tr>
+        `;
+    });
+
+    html += `</table></div>`;
+    return html;
+}
+
+// Dropdowns vorbesetzen
 function populateYearDropdowns() {
     var yearFrom = document.getElementById('yearFrom');
     var yearTo = document.getElementById('yearTo');
@@ -207,7 +266,7 @@ function populateYearDropdowns() {
         yearTo.appendChild(optionTo);
     }
 
-    // Standardwerte setzen (Zeitraum 2000 - 2025 beibehalten)
+    // Standardwerte
     yearFrom.value = 2000;
     yearTo.value = 2025;
 }
@@ -215,15 +274,10 @@ function populateYearDropdowns() {
 function validateMaxStations() {
     var input = document.getElementById("maxStations");
     var value = parseInt(input.value, 10);
-
     if (!isNaN(value)) {
-        if (value > 10) {
-            input.value = 10;
-        } else if (value < 1) {
-            input.value = 1;
-        }
+        if (value > 10) input.value = 10;
+        else if (value < 1) input.value = 1;
     }
 }
 
-// Beim Laden der Seite das Dropdown befüllen
 populateYearDropdowns();
