@@ -1,7 +1,6 @@
 /*
    style.css
-   -- Wichtige Änderung:
-   Alle Farben im Sidebar-Bereich sind nun auf Weiß (#FFF) gesetzt.
+   -- Alles bleibt gleich, nur am Ende fügen wir .leaflet-tooltip-Stile hinzu!
 */
 
 body, html {
@@ -30,7 +29,6 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
-    /* Hier die globale Farbe auf Weiß setzen */
     color: #fff;
 }
 
@@ -51,7 +49,6 @@ body, html {
 }
 
 #sidebar h2 {
-    /* Überschrift in Weiß */
     color: #fff;
     text-align: center;
     margin-bottom: 20px;
@@ -68,7 +65,6 @@ body, html {
 
 #sidebar label {
     font-size: 20px;
-    /* Label-Farbe auf Weiß */
     color: #fff;
     display: block;
     margin-bottom: 5px;
@@ -76,13 +72,12 @@ body, html {
 
 #radiusValue {
     font-size: 20px;
-    /* Auch hier Weiß */
     color: #fff;
     text-align: center;
     margin-top: 5px;
 }
 
-/* Inputs und Selects im Sidebar */
+/* Inputs & Selects */
 #sidebar input[type="text"],
 #sidebar select {
     width: 100%;
@@ -91,21 +86,18 @@ body, html {
     border: none;
     border-radius: 4px;
     background-color: rgba(0, 128, 192, 0.4);
-    /* Text-Farbe auf Weiß */
     color: #fff;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 #sidebar select option {
     background-color: rgba(0, 0, 0, 0.184);
-    /* Schriftfarbe in den Optionen auch Weiß */
     color: #fff;
 }
 
-/* Placeholder-Farbe auf Weiß */
 #sidebar input[type="text"]::placeholder {
     color: #fff;
-    opacity: 0.7; /* Etwas Transparenz, damit man es sieht */
+    opacity: 0.7;
 }
 
 #sidebar input[type="text"]:hover,
@@ -158,7 +150,6 @@ body, html {
     width: 100%;
     padding: 8px 16px;
     background-color: #0f8ba1;
-    /* Schriftfarbe auf Weiß */
     color: #fff;
     border: 1px solid black;
     border-radius: 5px;
@@ -187,7 +178,6 @@ body, html {
     border: none;
     border-radius: 4px;
     background-color: rgba(0, 150, 255, 0.4);
-    /* Schriftfarbe weiß */
     color: #fff;
     text-align: center;
     transition: background-color 0.2s ease, transform 0.2s ease;
@@ -213,7 +203,6 @@ body, html {
     justify-content: space-between;
     width: 100%;
     font-size: 18px;
-    /* Text-Farbe weiß */
     color: #fff;
     margin-top: 5px;
 }
@@ -232,67 +221,7 @@ body, html {
     padding-left: 5px;
 }
 
-/* Popup-Content */
-.leaflet-popup-content-wrapper {
-    width: 500px;  /* Breitere Popups */
-    background: rgba(114, 167, 176, 0.7) !important;
-    border-radius: 10px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-    color: rgb(1, 43, 63);
-}
-
-.leaflet-popup-content {
-    margin: 20px;
-}
-
-.leaflet-popup-tip {
-    background: rgba(114, 167, 176, 0.7) !important;
-}
-
-.popup-content {
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
-    text-align: center;
-    padding: 10px;
-}
-
-.popup-content h3 {
-    margin: 5px 0;
-    text-align: center;
-}
-
-.popup-content th {
-    font-weight: normal;
-}
-
-/* Tab-Buttons */
-.tab-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.tab-button {
-    padding: 6px 12px;
-    background-color: rgba(0, 128, 192, 0.4);
-    color: rgb(1, 43, 63);
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.tab-button:hover {
-    background-color: rgba(0, 150, 255, 0.4);
-}
-
-.tab-button.active {
-    background-color: rgba(0, 150, 255, 0.4);
-}
-
-/* Tabelle 1 */
+/* Tabelle */
 .table-container table {
     width: 100%;
     border-collapse: collapse;
@@ -320,6 +249,7 @@ body, html {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Number Input */
 #sidebar input[type="number"] {
     width: 100%;
     padding: 6px;
@@ -374,4 +304,30 @@ body, html {
     margin: 4px 0;
     font-size: 14px;
     color: #fff;
+}
+
+/* ------------------------------------------
+   NEU: Nur das Leaflet-Tooltip
+   (Weil du "bindTooltip" statt "bindPopup" verwendest)
+------------------------------------------- */
+.leaflet-tooltip {
+    background-color: rgba(114, 167, 176, 0.7) !important;
+    color: #fff !important;
+    border-radius: 6px;
+    border: none !important;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+    padding: 5px 10px;
+    font-size: 14px;
+    font-family: Roboto, sans-serif;
+    text-align: center;
+}
+
+.leaflet-tooltip-left,
+.leaflet-tooltip-right,
+.leaflet-tooltip-top,
+.leaflet-tooltip-bottom {
+    background-color: rgba(114, 167, 176, 0.7) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 6px;
 }

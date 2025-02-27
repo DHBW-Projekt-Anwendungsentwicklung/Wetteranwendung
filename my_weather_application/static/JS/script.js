@@ -85,6 +85,12 @@ function findStationsInRadius() {
         return;
     }
 
+    // -- NEU: Roter Pin anhand der Eingabefelder setzen --
+    if (currentPing !== null) {
+        map.removeLayer(currentPing);
+    }
+    currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+
     // Entferne alten Kreis und alte Marker
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
@@ -111,8 +117,19 @@ function findStationsInRadius() {
             console.log("Gefundene Stationen:", data);
 
             // Marker setzen
-            data.forEach(station => {
-                var marker = L.marker([station.latitude, station.longitude], { icon: blueIcon }).addTo(map);
+            data.forEach((station, index) => {
+                // Blauer Pin
+                var marker = L.marker([station.latitude, station.longitude], { icon: blueIcon })
+                    .addTo(map)
+                    // Tooltip mit "Station X: Name"
+                    .bindTooltip(
+                        `Station ${index + 1}: ${station.name || "No Name"}`,
+                        {
+                            permanent: false,
+                            direction: 'top',
+                            offset: [0, -10]
+                        }
+                    );
                 stationMarkers.push(marker);
             });
 
@@ -142,7 +159,6 @@ function displayStationsInSidebar(data) {
 
     var headingLabel = document.createElement("label");
     headingLabel.textContent = "Ergebnisse:";
-
     headingField.appendChild(headingLabel);
     stationList.appendChild(headingField);
 
