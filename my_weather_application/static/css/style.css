@@ -20,7 +20,7 @@ body, html {
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    height: 100vh;
     width: 20% !important;
     min-width: 250px;
     max-width: 300px;
@@ -29,6 +29,7 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    overflow-x: hidden;
     color: #fff;
 }
 
@@ -279,10 +280,10 @@ body, html {
 }
 
 #stationList {
+    max-height: none !important;
     margin-top: 20px;
-    overflow-y: auto;
+    overflow-y: visible !important;
     overflow-x: hidden;
-    max-height: 300px;
 }
 
 .station-item {
