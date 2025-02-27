@@ -103,31 +103,37 @@ function findStationsInRadius() {
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
     fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Gefundene Stationen:", data);
+    .then(response => response.json())
+    .then(data => {
+        console.log("Gefundene Stationen:", data);
 
-            data.forEach((station, index) => {
-                // Blauer Pin
-                var marker = L.marker([station.latitude, station.longitude], { icon: blueIcon })
-                    .addTo(map)
-                    .bindTooltip(
-                        `Station ${index + 1}: ${station.name || "No Name"}`,
-                        {
-                            permanent: false,
-                            direction: 'top',
-                            offset: [0, -10]
-                        }
-                    );
-                stationMarkers.push(marker);
-            });
+        data.forEach((station, index) => {
+            // Blauer Pin mit gespeicherter stationId
+            var marker = L.marker([station.latitude, station.longitude], {
+                icon: blueIcon,
+                stationId: station.station_id
+            })
+            .addTo(map)
+            .bindTooltip(
+                `Station ${index + 1}: ${station.name || "No Name"}`,
+             {
+             permanent: false,
+                direction: 'center', // Setzt den Tooltip direkt auf den Marker
+                offset: [0, 0]       // Kein Offset, damit er genau dort erscheint
+    }
+);
 
-            displayStationsInSidebar(data);
-        })
-        .catch(error => {
-            console.error("Fehler beim Abrufen der Stationsdaten:", error);
+
+            stationMarkers.push(marker);
         });
-}
+
+        displayStationsInSidebar(data);
+    })
+    .catch(error => {
+        console.error("Fehler beim Abrufen der Stationsdaten:", error);
+    });
+    }
+
 
 // Zeige Stationen links in der Sidebar
 function displayStationsInSidebar(data) {
@@ -185,15 +191,9 @@ function loadStationCalculations(stationId) {
         .then(response => response.json())
         .then(data => {
             if (!Array.isArray(data)) {
-                // Falls das Backend doch ein error-Objekt gibt
-                if (data.error) {
-                    alert("Fehler: " + data.error);
-                } else {
-                    alert("Unbekannter Fehler");
-                }
+                alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
                 return;
             }
-            // Hier data ist ein Array
             if (!data.length) {
                 alert("Keine Daten für diese Station (oder Station hat keine .dly-Datei).");
                 return;
@@ -201,8 +201,18 @@ function loadStationCalculations(stationId) {
             console.log("Berechnete Stats:", data);
 
             let popupHtml = buildCalculationsPopupHtml(data, stationId);
-            if (currentPing) {
-                currentPing.bindPopup(popupHtml).openPopup();
+
+            // 🔍 Den richtigen Marker für die Station finden
+            let stationMarker = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
+
+            if (stationMarker) {
+                stationMarker.bindPopup(popupHtml, {
+                     offset: [0, -10] // Verschiebt das Pop-up nach unten
+                }).openPopup();
+
+            } else {
+                alert("Fehler: Kein Marker für diese Station gefunden.");
+                console.error("Verfügbare Marker:", stationMarkers);
             }
         })
         .catch(err => {
@@ -211,43 +221,71 @@ function loadStationCalculations(stationId) {
 }
 
 
-// Baut aus dem Berechnungs-Array eine HTML-Tabelle oder Text
+
 function buildCalculationsPopupHtml(statsArray, stationId) {
-    // statsArray = [
-    //   { year:2021, yearly_mean: 7.8, spring:'min:5, max:15', ... },
-    //   { year:2022, yearly_mean: 8.1, spring:'min:4, max:16', ... },
-    //   ...
-    // ]
     let html = `
-        <div style="text-align:center;">
-            <h3>Auswertung: ${stationId}</h3>
-            <table border="1" style="margin:auto;">
-                <tr>
-                    <th>Jahr</th>
-                    <th>Jahres-Mittel</th>
-                    <th>Frühling</th>
-                    <th>Sommer</th>
-                    <th>Herbst</th>
-                    <th>Winter</th>
-                </tr>
+        <div class="popup-header" style="min-width: 650px;">Wetterstation: ${stationId}</div>
+        <div class="popup-table-container">
+            <table class="popup-table">
+                <thead>
+                    <tr>
+                        <th>Jahr</th>
+                        <th>Jahres-Mittel</th>
+                        <th>Frühling</th>
+                        <th>Sommer</th>
+                        <th>Herbst</th>
+                        <th>Winter</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
 
-    statsArray.forEach(row => {
+    statsArray.forEach((row) => {
+        function extractMinMax(value) {
+            if (!value || !value.includes("min:") || !value.includes("max:")) {
+                return ["Keine Daten", "Keine Daten"];
+            }
+            let minMatch = value.match(/min:([-\d.]+)/);
+            let maxMatch = value.match(/max:([-\d.]+)/);
+            return [
+                minMatch ? minMatch[1] + "°C" : "Keine Daten",
+                maxMatch ? maxMatch[1] + "°C" : "Keine Daten"
+            ];
+        }
+
+        let [springMin, springMax] = extractMinMax(row.spring);
+        let [summerMin, summerMax] = extractMinMax(row.summer);
+        let [autumnMin, autumnMax] = extractMinMax(row.autumn);
+        let [winterMin, winterMax] = extractMinMax(row.winter);
+
         html += `
             <tr>
-                <td>${row.year}</td>
-                <td>${row.yearly_mean || "?"} °C</td>
-                <td>${row.spring || "?"}</td>
-                <td>${row.summer || "?"}</td>
-                <td>${row.autumn || "?"}</td>
-                <td>${row.winter || "?"}</td>
+                <td>${row.year || "?"}</td>
+                <td>${row.yearly_mean !== undefined ? row.yearly_mean + " °C" : "?"}</td>
+                <td>
+                    <span class="min-max">min: ${springMin}</span>
+                    <span class="min-max">max: ${springMax}</span>
+                </td>
+                <td>
+                    <span class="min-max">min: ${summerMin}</span>
+                    <span class="min-max">max: ${summerMax}</span>
+                </td>
+                <td>
+                    <span class="min-max">min: ${autumnMin}</span>
+                    <span class="min-max">max: ${autumnMax}</span>
+                </td>
+                <td>
+                    <span class="min-max">min: ${winterMin}</span>
+                    <span class="min-max">max: ${winterMax}</span>
+                </td>
             </tr>
         `;
     });
 
-    html += `</table></div>`;
+    html += `</tbody></table></div>`;
     return html;
 }
+
 
 // Dropdowns vorbesetzen
 function populateYearDropdowns() {
@@ -267,8 +305,8 @@ function populateYearDropdowns() {
     }
 
     // Standardwerte
-    yearFrom.value = 2000;
-    yearTo.value = 2025;
+    yearFrom.value = 1800;
+    yearTo.value = 2024;
 }
 
 function validateMaxStations() {
