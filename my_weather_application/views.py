@@ -199,6 +199,9 @@ def calc_yearly_stats(daily_records, year_from, year_to):
     """
     Berechnet Jahres- und Jahreszeitenstatistiken für TMIN und TMAX.
 
+    - Findet das erste Jahr, für das Daten existieren, und beginnt die Tabelle erst ab dort.
+    - Falls ein Jahr mitten im Jahr beginnt, werden vorherige Monate mit "Keine Daten" gefüllt.
+
     - yearly_min_mean: Durchschnitt aller TMIN pro Kalenderjahr (Jan-Dez)
     - yearly_max_mean: Durchschnitt aller TMAX pro Kalenderjahr (Jan-Dez)
     - Winter(Y) = Dez(Y-1), Jan(Y), Feb(Y)
@@ -206,7 +209,7 @@ def calc_yearly_stats(daily_records, year_from, year_to):
     - Sommer: Jun, Jul, Aug
     - Herbst: Sep, Okt, Nov
 
-    Gibt Liste mit Dicts:
+    Gibt Liste mit Dicts zurück:
     [
       {
         "year": 2020,
@@ -216,24 +219,36 @@ def calc_yearly_stats(daily_records, year_from, year_to):
       },
       ...
     ]
-    zurück.
     """
+
     # Daten nach (year, month) bündeln
     data_by_year_month = defaultdict(lambda: {"TMIN": [], "TMAX": []})
     for r in daily_records:
         y, m = r["year"], r["month"]
         data_by_year_month[(y, m)][r["element"]].append(r["value"])
 
+    # Finde das erste Jahr mit verfügbaren Daten
+    available_years = sorted(set(y for y, _ in data_by_year_month.keys()))
+    if not available_years:
+        return []  # Keine Daten vorhanden
+
+    first_available_year = max(min(available_years), year_from)
+
     results = []
 
-    # Schleife über den gewünschten Jahresbereich (inklusive year_to)
-    for year in range(year_from, year_to + 1):
+    # Schleife über den gewünschten Jahresbereich, aber erst ab dem ersten verfügbaren Jahr
+    for year in range(first_available_year, year_to + 1):
         # 1) Jahresdurchschnittswerte (Jan-Dez)
         tmin_list = []
         tmax_list = []
+        missing_months = []
+
         for m in range(1, 13):
-            tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
-            tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
+            if (year, m) in data_by_year_month:
+                tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
+                tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
+            else:
+                missing_months.append(m)  # Fehlt dieser Monat komplett?
 
         if tmin_list:
             yearly_min_mean = round(sum(tmin_list) / len(tmin_list), 1)
@@ -246,32 +261,28 @@ def calc_yearly_stats(daily_records, year_from, year_to):
             yearly_max_mean = None
 
         # Hilfsfunktion für min-/max-Text
-        def build_temp_text(min_vals, max_vals):
+        def build_temp_text(min_vals, max_vals, missing=False):
+            if missing:
+                return "Keine Daten"
             if min_vals and max_vals:
                 return (f"min: {sum(min_vals) / len(min_vals):.1f}°C"
                         f"<br>max: {sum(max_vals) / len(max_vals):.1f}°C")
             else:
                 return "Keine Daten"
 
-        # Hilfsfunktion, die Werte für bestimmte (year,month)-Paare mittelt
+        # Hilfsfunktion für Jahreszeiten-Mittelwerte
         def gather_avg_for_pairs(pairs):
             tmp_min = []
             tmp_max = []
+            missing = all((yy, mm) not in data_by_year_month for yy, mm in pairs)
+
             for (yy, mm) in pairs:
                 tmp_min.extend(data_by_year_month[(yy, mm)]["TMIN"])
                 tmp_max.extend(data_by_year_month[(yy, mm)]["TMAX"])
-            return build_temp_text(tmp_min, tmp_max)
+            return build_temp_text(tmp_min, tmp_max, missing)
 
         # 2) Jahreszeiten definieren
-        # Winter(Y) = Dez(Y-1) + Jan(Y) + Feb(Y)
-        # => wir rechnen immer (year-1,12), (year,1), (year,2) zusammen,
-        #    damit auch das erste Jahr den Dezember des Vorjahres bekommt!
-        winter_pairs = [
-            (year - 1, 12),
-            (year, 1),
-            (year, 2),
-        ]
-
+        winter_pairs = [(year - 1, 12), (year, 1), (year, 2)]
         spring_pairs = [(year, 3), (year, 4), (year, 5)]
         summer_pairs = [(year, 6), (year, 7), (year, 8)]
         autumn_pairs = [(year, 9), (year, 10), (year, 11)]
@@ -282,10 +293,9 @@ def calc_yearly_stats(daily_records, year_from, year_to):
         autumn_str = gather_avg_for_pairs(autumn_pairs)
 
         # 3) Ausgabe-Strings für das Jahr
-        if yearly_min_mean is not None and yearly_max_mean is not None:
-            yearly_str = f"min: {yearly_min_mean:.1f}°C<br>max: {yearly_max_mean:.1f}°C"
-        else:
-            yearly_str = "Keine Daten"
+        yearly_str = build_temp_text(
+            tmin_list, tmax_list, missing=(len(tmin_list) == 0 and len(tmax_list) == 0)
+        )
 
         results.append({
             "year": year,
