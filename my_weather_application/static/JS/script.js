@@ -111,8 +111,7 @@ function findStationsInRadius() {
             var marker = L.marker([station.latitude, station.longitude], {
                 icon: blueIcon,
                 stationId: station.station_id
-            })
-            .addTo(map)
+            }).addTo(map)
             .bindTooltip(
                 `Station ${index + 1}: ${station.name || "No Name"}`,
                 {
@@ -121,6 +120,11 @@ function findStationsInRadius() {
                     offset: [0, -10]
                 }
             );
+
+            // 🟢 **Ergänzung: Klick auf Marker zeigt Wetterdaten an**
+            marker.on('click', function () {
+                loadStationCalculations(station.station_id);
+            });
 
             stationMarkers.push(marker);
         });
@@ -131,6 +135,7 @@ function findStationsInRadius() {
         console.error("Fehler beim Abrufen der Stationsdaten:", error);
     });
 }
+
 
 // Zeige Stationen in der Sidebar
 function displayStationsInSidebar(data) {
