@@ -213,41 +213,40 @@ function loadStationCalculations(stationId) {
 
 // Baut aus dem Berechnungs-Array eine HTML-Tabelle oder Text
 function buildCalculationsPopupHtml(statsArray, stationId) {
-    // statsArray = [
-    //   { year:2021, yearly_mean: 7.8, spring:'min:5, max:15', ... },
-    //   { year:2022, yearly_mean: 8.1, spring:'min:4, max:16', ... },
-    //   ...
-    // ]
     let html = `
-        <div style="text-align:center;">
-            <h3>Auswertung: ${stationId}</h3>
-            <table border="1" style="margin:auto;">
-                <tr>
-                    <th>Jahr</th>
-                    <th>Jahres-Mittel</th>
-                    <th>Frühling</th>
-                    <th>Sommer</th>
-                    <th>Herbst</th>
-                    <th>Winter</th>
-                </tr>
+      <div style="text-align:center;">
+        <h3>Auswertung: ${stationId}</h3>
+        <table border="1" style="margin:auto;">
+          <tr>
+            <th>Jahr</th>
+            <th>Jährliche Mittelwerte</th>
+            <th>Frühling</th>
+            <th>Sommer</th>
+            <th>Herbst</th>
+            <th>Winter</th>
+          </tr>
     `;
 
     statsArray.forEach(row => {
-        html += `
-            <tr>
-                <td>${row.year}</td>
-                <td>${row.yearly_mean || "?"} °C</td>
-                <td>${row.spring || "?"}</td>
-                <td>${row.summer || "?"}</td>
-                <td>${row.autumn || "?"}</td>
-                <td>${row.winter || "?"}</td>
-            </tr>
-        `;
+      html += `
+        <tr>
+          <td>${row.year}</td>
+          <td style="text-align:left;">
+            ${row.yearly_min_mean}
+          </td>
+          <td>${row.spring}</td>
+          <td>${row.summer}</td>
+          <td>${row.autumn}</td>
+          <td>${row.winter}</td>
+        </tr>
+      `;
     });
 
     html += `</table></div>`;
     return html;
 }
+
+
 
 // Dropdowns vorbesetzen
 function populateYearDropdowns() {
