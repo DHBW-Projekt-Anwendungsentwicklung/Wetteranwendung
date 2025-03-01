@@ -449,3 +449,58 @@ body, html {
 .popup-table tr:nth-child(even) td {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Container für die Navigationspfeile und Seitenanzeige */
+.popup-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Pfeile */
+.popup-pagination button {
+    background-color: rgba(0, 128, 192, 0.7);
+    border: none;
+    color: white;
+    font-size: 20px;
+    padding: 8px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover-Effekt für die Pfeile */
+.popup-pagination button:hover {
+    background-color: rgba(0, 150, 255, 0.9);
+    transform: scale(1.1);
+}
+
+/* Styling für die Seitenanzeige */
+.page-indicator {
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Standardmäßige Anzeige der ersten Seite */
+.popup-table-container.page-1 {
+    display: block;
+}
+
+/* Standardmäßige Ausblendung der zweiten Seite */
+.popup-table-container.page-2 {
+    display: none;
+}
+
+/* Leere Seite mit Nachricht */
+.empty-page {
+    text-align: center;
+    font-size: 18px;
+    color: white;
+    margin-top: 20px;
+}

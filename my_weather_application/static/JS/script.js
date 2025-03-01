@@ -215,34 +215,67 @@ function loadStationCalculations(stationId) {
 
 // Baut HTML für das Berechnungs-Popup
 function buildCalculationsPopupHtml(statsArray, stationId, stationName) {
-    let html = `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
-                <div class="popup-table-container">
-                <table class="popup-table">
-                <thead>
-                    <tr>
-                        <th>Jahr</th>
-                        <th>Jährliche Mittelwerte</th>
-                        <th>Frühling</th>
-                        <th>Sommer</th>
-                        <th>Herbst</th>
-                        <th>Winter</th>
-                    </tr>
-                </thead><tbody>`;
+    let page1Content = `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
+                        <div class="popup-table-container page-1">
+                        <table class="popup-table">
+                        <thead>
+                            <tr>
+                                <th>Jahr</th>
+                                <th>Jährliche Mittelwerte</th>
+                                <th>Frühling</th>
+                                <th>Sommer</th>
+                                <th>Herbst</th>
+                                <th>Winter</th>
+                            </tr>
+                        </thead><tbody>`;
 
     statsArray.forEach(row => {
-        html += `<tr>
-                    <td>${row.year || "?"}</td>
-                    <td>${row.yearly_min_mean || "?"}</td>
-                    <td>${row.spring || "?"}</td>
-                    <td>${row.summer || "?"}</td>
-                    <td>${row.autumn || "?"}</td>
-                    <td>${row.winter || "?"}</td>
-                </tr>`;
+        page1Content += `<tr>
+                            <td>${row.year || "?"}</td>
+                            <td>${row.yearly_min_mean || "?"}</td>
+                            <td>${row.spring || "?"}</td>
+                            <td>${row.summer || "?"}</td>
+                            <td>${row.autumn || "?"}</td>
+                            <td>${row.winter || "?"}</td>
+                        </tr>`;
     });
 
-    html += `</tbody></table></div>`;
-    return html;
+    page1Content += `</tbody></table></div>`;
+
+    // **Leere Seite 2**
+    let page2Content = `<div class="popup-table-container page-2" style="display: none;">
+                            <p class="empty-page">Noch keine Inhalte.</p>
+                        </div>`;
+
+    // **Navigationspfeile**
+    let paginationControls = `<div class="popup-pagination">
+                                  <button class="prev-page" onclick="switchPopupPage(-1)">←</button>
+                                  <span class="page-indicator">Seite <span id="currentPage">1</span>/2</span>
+                                  <button class="next-page" onclick="switchPopupPage(1)">→</button>
+                              </div>`;
+
+    return page1Content + page2Content + paginationControls;
 }
+
+
+function switchPopupPage(direction) {
+    let page1 = document.querySelector(".popup-table-container.page-1");
+    let page2 = document.querySelector(".popup-table-container.page-2");
+    let pageIndicator = document.getElementById("currentPage");
+
+    if (direction === 1) {
+        // Wechsel zu Seite 2
+        page1.style.display = "none";
+        page2.style.display = "block";
+        pageIndicator.textContent = "2";
+    } else {
+        // Wechsel zurück zu Seite 1
+        page1.style.display = "block";
+        page2.style.display = "none";
+        pageIndicator.textContent = "1";
+    }
+}
+
 
 // Dropdowns vorbesetzen
 function populateYearDropdowns() {
