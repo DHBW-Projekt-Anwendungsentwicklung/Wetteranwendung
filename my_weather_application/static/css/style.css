@@ -20,7 +20,7 @@ body, html {
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    height: 100vh;
     width: 20% !important;
     min-width: 250px;
     max-width: 300px;
@@ -29,6 +29,7 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    overflow-x: hidden;
     color: #fff;
 }
 
@@ -279,10 +280,24 @@ body, html {
 }
 
 #stationList {
-    margin-top: 20px;
-    overflow-y: auto;
+    max-height: 300px; /* Begrenzung der Höhe */
+    overflow-y: auto; /* Vertikales Scrollen aktivieren */
     overflow-x: hidden;
-    max-height: 300px;
+    margin-top: 20px;
+    padding-right: 5px; /* Kleiner Abstand für den Scrollbalken */
+}
+
+#stationList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#stationList::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 128, 192, 0.6);
+    border-radius: 4px;
+}
+
+#stationList::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .station-item {
@@ -292,6 +307,7 @@ body, html {
     padding: 10px;
     margin-bottom: 10px;
     text-align: left;
+    cursor: pointer;
 }
 
 .station-item h4 {
@@ -305,6 +321,12 @@ body, html {
     font-size: 14px;
     color: #fff;
 }
+
+.station-item:hover {
+    background-color: rgba(0, 150, 255, 0.4);
+    transform: scale(1.02);
+}
+
 
 /* ------------------------------------------
    NEU: Nur das Leaflet-Tooltip
@@ -330,4 +352,100 @@ body, html {
     color: #fff !important;
     border: none !important;
     border-radius: 6px;
+}
+
+/* 🟢 Wetterstation Pop-up Styling */
+.leaflet-popup-content {
+    max-width: none !important;  /* Keine feste Breite mehr */
+    min-width: 600px !important; /* Erhöhung der Mindestbreite */
+    white-space: nowrap; /* Verhindert, dass der Text umbricht */
+}
+
+/* 🟢 Hintergrund & Rahmen für das Pop-up */
+/* Pop-up Hintergrundfarbe & Styling fixen */
+.leaflet-popup-content-wrapper {
+    background: rgba(114, 167, 176, 0.9) !important;
+    max-width: none !important;
+    min-width: 650px !important;  /* Breiter als die Tabelle */
+    overflow-x: hidden !important;  /* Horizontal Scroll deaktiviert */
+}
+
+/* 🟢 Wetterdaten Tabelle */
+.popup-table {
+    width: 100% !important;  /* Tabelle nimmt die volle Breite des Pop-ups ein */
+    min-width: 600px !important; /* Breite für komplette Jahreszeiten */
+    border-collapse: collapse;
+    table-layout: auto !important;
+    overflow-x: hidden !important;  /* Horizontal Scroll entfernen */
+    display: block;
+    max-height: none !important; /* Vertikales Scrollen entfernen */
+    overflow-y: hidden !important; /* Vertikales Scrollen verhindern */
+}
+
+/* 🟢 Tabellenkopf */
+.popup-table thead {
+    background-color: rgba(0, 128, 192, 0.6) !important;
+}
+
+.popup-table th {
+    padding: 6px;
+    text-align: center;
+    color: rgb(1, 43, 63);
+    white-space: nowrap;
+}
+
+/* 🟢 Tabelleninhalt */
+/* Min/Max Werte untereinander darstellen */
+.popup-table td {
+    padding: 6px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    white-space: nowrap;
+}
+
+.popup-table td .min-max {
+    display: block;  /* Min und Max untereinander */
+    font-size: 12px;
+    line-height: 1.6; /* Etwas Abstand für bessere Lesbarkeit */
+}
+
+/* 🟢 Pop-up Container: Kein horizontales Scrollen, vertikales bleibt */
+.popup-table-container {
+    width: 100% !important;  /* Nimmt die volle Breite des Pop-ups ein */
+    max-width: 100% !important;
+    overflow-x: hidden !important;  /* Entfernt horizontales Scrollen */
+    overflow-y: auto !important;  /* Vertikales Scrollen bleibt erlaubt */
+    max-height: 300px; /* Falls nötig, Begrenzung der Höhe */
+     margin: 0 !important;
+}
+
+/* 🟢 Tabelle bleibt innerhalb des Containers */
+.popup-table {
+    width: 100% !important;  /* Volle Breite nutzen */
+    max-width: 100% !important;
+    table-layout: fixed !important; /* Spalten werden gleichmäßig verteilt */
+}
+
+/* 🟢 Spalteninhalt flexibler machen */
+.popup-table th,
+.popup-table td {
+    white-space: normal !important;  /* Erlaubt Zeilenumbruch */
+    word-wrap: break-word; /* Falls zu lange Wörter vorhanden sind */
+    overflow: hidden;
+}
+
+/* 🟢 Keine Überbreite im Pop-up */
+.leaflet-popup-content {
+    width: auto !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important; /* KEIN seitliches Scrollen */
+    overflow-y: auto !important;   /* ABER vertikales Scrollen bleibt */
+}
+
+
+
+/* 🟢 Alternierende Farben für Zeilen */
+.popup-table tr:nth-child(even) td {
+    background-color: rgba(255, 255, 255, 0.1);
 }
