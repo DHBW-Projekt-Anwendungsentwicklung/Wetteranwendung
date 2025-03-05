@@ -1,3 +1,7 @@
+/*************************
+ *   script.js
+ *************************/
+
 // Karte initialisieren
 var map = L.map('map', {
     center: [0, 0],
@@ -78,13 +82,13 @@ function findStationsInRadius() {
         return;
     }
 
-    // Roter Pin auf Eingabewerte
+    // Roten Pin angeben
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
     currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
 
-    // Alten Kreis und blaue Marker entfernen
+    // Alten Kreis + Station-Marker entfernen
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
@@ -102,43 +106,43 @@ function findStationsInRadius() {
 
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
+    // Daten fetchen
     fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
-    .then(response => response.json())
-    .then(data => {
-        console.log("Gefundene Stationen:", data);
+        .then(response => response.json())
+        .then(data => {
+            console.log("Gefundene Stationen:", data);
 
-        data.forEach((station, index) => {
-            var marker = L.marker([station.latitude, station.longitude], {
-                icon: blueIcon,
-                stationId: station.station_id,
-                stationName: station.name || "Unbekannt"
-            }).addTo(map)
-            .bindTooltip(
-                `Station ${index + 1}: ${station.name || "No Name"}`,
-                {
-                    permanent: false,
-                    direction: 'top',
-                    offset: [0, -10]
-                }
-            );
+            data.forEach((station, index) => {
+                var marker = L.marker([station.latitude, station.longitude], {
+                    icon: blueIcon,
+                    stationId: station.station_id,
+                    stationName: station.name || "Unbekannt"
+                }).addTo(map)
+                .bindTooltip(
+                    `Station ${index + 1}: ${station.name || "No Name"}`,
+                    {
+                        permanent: false,
+                        direction: 'top',
+                        offset: [0, -10]
+                    }
+                );
 
-            // 🟢 **Ergänzung: Klick auf Marker zeigt Wetterdaten an**
-            marker.on('click', function () {
-                loadStationCalculations(station.station_id);
+                // Klick => Wetterdaten
+                marker.on('click', function () {
+                    loadStationCalculations(station.station_id);
+                });
+
+                stationMarkers.push(marker);
             });
 
-            stationMarkers.push(marker);
+            displayStationsInSidebar(data);
+        })
+        .catch(error => {
+            console.error("Fehler beim Abrufen der Stationsdaten:", error);
         });
-
-        displayStationsInSidebar(data);
-    })
-    .catch(error => {
-        console.error("Fehler beim Abrufen der Stationsdaten:", error);
-    });
 }
 
-
-// Zeige Stationen in der Sidebar
+// Liste in der Sidebar zeigen
 function displayStationsInSidebar(data) {
     var oldList = document.getElementById("stationList");
     if (oldList) {
@@ -165,6 +169,7 @@ function displayStationsInSidebar(data) {
             <p><b>Längengrad:</b> ${station.longitude}</p>
         `;
 
+        // Klick auf Sidebar-Eintrag => Daten laden
         item.addEventListener('click', () => {
             loadStationCalculations(station.station_id);
         });
@@ -176,106 +181,294 @@ function displayStationsInSidebar(data) {
     sidebar.appendChild(stationList);
 }
 
-// Holt die Jahres-Berechnungen für station_id
+// Daten für Station laden => Popup
 function loadStationCalculations(stationId) {
     let yearFrom = parseInt(document.getElementById('yearFrom').value, 10) || 1800;
     let yearTo   = parseInt(document.getElementById('yearTo').value, 10)   || 2025;
 
     fetch(`/station_calculations/?station_id=${stationId}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
-    .then(response => response.json())
-    .then(data => {
-        if (!Array.isArray(data)) {
-            alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
-            return;
-        }
-        if (!data.length) {
-            alert("Keine Daten für diese Station.");
-            return;
-        }
+        .then(response => response.json())
+        .then(data => {
+            if (!Array.isArray(data)) {
+                alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
+                return;
+            }
+            if (!data.length) {
+                alert("Keine Daten für diese Station.");
+                return;
+            }
 
-        let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
-        let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
-        let popupHtml = buildCalculationsPopupHtml(data, stationId, stationName);
+            let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
+            let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
 
+            // JSON als String
+            let encodedData = encodeURIComponent(JSON.stringify(data));
 
-        let stationMarker = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
+            let popupHtml = buildCalculationsPopupHtml(encodedData, stationId, stationName);
 
-        if (stationMarker) {
-            stationMarker.bindPopup(popupHtml, {
-                offset: [0, -10]
-            }).openPopup();
-        } else {
-            alert("Fehler: Kein Marker für diese Station gefunden.");
-        }
-    })
-    .catch(err => {
-        console.error("Fehler beim Laden der Berechnungen:", err);
-    });
+            if (station) {
+                station.bindPopup(popupHtml, {
+                    offset: [0, -10]
+                }).openPopup();
+            } else {
+                alert("Fehler: Kein Marker für diese Station gefunden.");
+            }
+        })
+        .catch(err => {
+            console.error("Fehler beim Laden der Berechnungen:", err);
+        });
 }
 
-// Baut HTML für das Berechnungs-Popup
-function buildCalculationsPopupHtml(statsArray, stationId, stationName) {
-    let page1Content = `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
-                        <div class="popup-table-container page-1">
-                        <table class="popup-table">
-                        <thead>
-                            <tr>
-                                <th>Jahr</th>
-                                <th>Jährliche Mittelwerte</th>
-                                <th>Frühling</th>
-                                <th>Sommer</th>
-                                <th>Herbst</th>
-                                <th>Winter</th>
-                            </tr>
-                        </thead><tbody>`;
+// Popup (Seite 1 = Tabelle, Seite 2 = Chart)
+function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
+    // 1) Daten parsen
+    let statsArray = JSON.parse(decodeURIComponent(encodedData));
 
+    // 2) Tabelle aufbauen
+    let tableRows = "";
     statsArray.forEach(row => {
-        page1Content += `<tr>
-                            <td>${row.year || "?"}</td>
-                            <td>${row.yearly_min_mean || "?"}</td>
-                            <td>${row.spring || "?"}</td>
-                            <td>${row.summer || "?"}</td>
-                            <td>${row.autumn || "?"}</td>
-                            <td>${row.winter || "?"}</td>
-                        </tr>`;
+        tableRows += `
+          <tr>
+            <td>${row.year || "?"}</td>
+            <td>${row.yearly_min_mean || "?"}</td>
+            <td>${row.spring || "?"}</td>
+            <td>${row.summer || "?"}</td>
+            <td>${row.autumn || "?"}</td>
+            <td>${row.winter || "?"}</td>
+          </tr>
+        `;
     });
 
-    page1Content += `</tbody></table></div>`;
+    // Seite 1 (Tabelle)
+    let page1Content = `
+      <div class="popup-header">
+        Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})
+      </div>
+      <div class="popup-table-container page-1">
+        <table class="popup-table">
+          <thead>
+            <tr>
+              <th>Jahr</th>
+              <th>Jährliche Mittelwerte</th>
+              <th>Frühling</th>
+              <th>Sommer</th>
+              <th>Herbst</th>
+              <th>Winter</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </div>
+    `;
 
-    // **Leere Seite 2**
-    let page2Content = `<div class="popup-table-container page-2" style="display: none;">
-                            <p class="empty-page">Noch keine Inhalte.</p>
-                        </div>`;
+    // Seite 2 (Chart)
+    let page2Content = `
+      <div class="popup-table-container page-2" style="display: none;">
+        <div id="chartData" style="display:none;">${encodedData}</div>
+        <div class="popup-charts-container">
+          <canvas id="chartCombined"></canvas>
+        </div>
+      </div>
+    `;
 
-    // **Navigationspfeile**
-    let paginationControls = `<div class="popup-pagination">
-                                  <button class="prev-page" onclick="switchPopupPage(-1)">←</button>
-                                  <span class="page-indicator">Seite <span id="currentPage">1</span>/2</span>
-                                  <button class="next-page" onclick="switchPopupPage(1)">→</button>
-                              </div>`;
+    // Pagination
+    let paginationControls = `
+      <div class="popup-pagination">
+        <button class="prev-page" onclick="switchPopupPage(-1)">←</button>
+        <span class="page-indicator">Seite <span id="currentPage">1</span>/2</span>
+        <button class="next-page" onclick="switchPopupPage(1)">→</button>
+      </div>
+    `;
 
     return page1Content + page2Content + paginationControls;
 }
 
-
+// Seite wechseln
 function switchPopupPage(direction) {
     let page1 = document.querySelector(".popup-table-container.page-1");
     let page2 = document.querySelector(".popup-table-container.page-2");
     let pageIndicator = document.getElementById("currentPage");
 
     if (direction === 1) {
-        // Wechsel zu Seite 2
+        // zu Seite 2
         page1.style.display = "none";
         page2.style.display = "block";
         pageIndicator.textContent = "2";
+        buildChartsOnPage2(); // Diagramm erzeugen
     } else {
-        // Wechsel zurück zu Seite 1
+        // zurück zu Seite 1
         page1.style.display = "block";
         page2.style.display = "none";
         pageIndicator.textContent = "1";
     }
 }
 
+// Diagramm erstellen (Seite 2)
+function buildChartsOnPage2() {
+    let dataDiv = document.getElementById("chartData");
+    if (!dataDiv) return;
+
+    let rawString = dataDiv.textContent.trim();
+    let statsArray;
+    try {
+        statsArray = JSON.parse(decodeURIComponent(rawString));
+    } catch (err) {
+        console.error("Konnte chartData nicht parsen:", err);
+        return;
+    }
+
+    // Arrays
+    let years = [];
+
+    let yearlyMinValues = [];
+    let yearlyMaxValues = [];
+    let springMinValues = [];
+    let springMaxValues = [];
+    let summerMinValues = [];
+    let summerMaxValues = [];
+    let autumnMinValues = [];
+    let autumnMaxValues = [];
+    let winterMinValues = [];
+    let winterMaxValues = [];
+
+    function parseMinMaxString(str) {
+        if (!str || !str.includes("min:") || !str.includes("max:")) {
+            return { min: null, max: null };
+        }
+        let regex = /min:\s*([\d.-]+).+max:\s*([\d.-]+)/;
+        let match = str.match(regex);
+        if (!match) return { min: null, max: null };
+        let parsedMin = parseFloat(match[1]);
+        let parsedMax = parseFloat(match[2]);
+        return { min: parsedMin, max: parsedMax };
+    }
+
+    statsArray.forEach(row => {
+        years.push(row.year);
+
+        let yData = parseMinMaxString(row.yearly_min_mean);
+        yearlyMinValues.push(yData.min);
+        yearlyMaxValues.push(yData.max);
+
+        let sp = parseMinMaxString(row.spring);
+        springMinValues.push(sp.min);
+        springMaxValues.push(sp.max);
+
+        let su = parseMinMaxString(row.summer);
+        summerMinValues.push(su.min);
+        summerMaxValues.push(su.max);
+
+        let au = parseMinMaxString(row.autumn);
+        autumnMinValues.push(au.min);
+        autumnMaxValues.push(au.max);
+
+        let wi = parseMinMaxString(row.winter);
+        winterMinValues.push(wi.min);
+        winterMaxValues.push(wi.max);
+    });
+
+    // Chart.js
+    let ctx = document.getElementById('chartCombined').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'Jährlicher Mittelwert Max',
+                    data: yearlyMinValues,
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                    spanGaps: true
+                },
+                {
+                    label: 'Jährlicher Mittelwert Min',
+                    data: yearlyMaxValues,
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    spanGaps: true
+                },
+                {
+                    label: 'Frühling Min',
+                    data: springMinValues,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    spanGaps: true
+                },
+                {
+                    label: 'Frühling Max',
+                    data: springMaxValues,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    spanGaps: true
+                },
+                {
+                    label: 'Sommer Min',
+                    data: summerMinValues,
+                    borderColor: '#FF8800',
+                    backgroundColor: '#FF8800',
+                    spanGaps: true
+                },
+                {
+                    label: 'Sommer Max',
+                    data: summerMaxValues,
+                    borderColor: '#FF8800',
+                    backgroundColor: '#FF8800',
+                    spanGaps: true
+                },
+                {
+                    label: 'Herbst Min',
+                    data: autumnMinValues,
+                    borderColor: '#44322d',
+                    backgroundColor: '#44322d',
+                    spanGaps: true
+                },
+                {
+                    label: 'Herbst Min',
+                    data: autumnMaxValues,
+                    borderColor: '#44322d',
+                    backgroundColor: '#44322d',
+                    spanGaps: true
+                },
+                {
+                    label: 'Winter Min',
+                    data: winterMinValues,
+                    borderColor: 'grey',
+                    backgroundColor: 'rgba(128,0,128,0.1)',
+                    spanGaps: true
+                },
+                {
+                    label: 'Winter Max',
+                    data: winterMaxValues,
+                    borderColor: 'grey',
+                    backgroundColor: 'rgba(255,0,255,0.1)',
+                    spanGaps: true
+                },
+            ]
+        },
+        options: {
+            responsive: true,          // an Container anpassen
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Temperatur (°C)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Jahr'
+                    }
+                }
+            }
+        }
+    });
+}
 
 // Dropdowns vorbesetzen
 function populateYearDropdowns() {
@@ -308,4 +501,5 @@ function validateMaxStations() {
     }
 }
 
+// Beim Laden einmal ausführen
 populateYearDropdowns();

@@ -1,6 +1,6 @@
 /*
    style.css
-   -- Alles bleibt gleich, nur am Ende fügen wir .leaflet-tooltip-Stile hinzu!
+   -- Popup vergrößert, Tabelle/Chart füllen jetzt den Inhalt via Flex-Layout.
 */
 
 body, html {
@@ -280,11 +280,11 @@ body, html {
 }
 
 #stationList {
-    max-height: 300px; /* Begrenzung der Höhe */
-    overflow-y: auto; /* Vertikales Scrollen aktivieren */
+    max-height: 300px;
+    overflow-y: auto;
     overflow-x: hidden;
     margin-top: 20px;
-    padding-right: 5px; /* Kleiner Abstand für den Scrollbalken */
+    padding-right: 5px;
 }
 
 #stationList::-webkit-scrollbar {
@@ -327,10 +327,8 @@ body, html {
     transform: scale(1.02);
 }
 
-
 /* ------------------------------------------
-   NEU: Nur das Leaflet-Tooltip
-   (Weil du "bindTooltip" statt "bindPopup" verwendest)
+   NEU: Leaflet-Tooltip (bindTooltip)
 ------------------------------------------- */
 .leaflet-tooltip {
     background-color: rgba(114, 167, 176, 0.7) !important;
@@ -354,115 +352,90 @@ body, html {
     border-radius: 6px;
 }
 
-/* 🟢 Wetterstation Pop-up Styling */
-.leaflet-popup-content {
-    max-width: none !important;  /* Keine feste Breite mehr */
-    min-width: 600px !important; /* Erhöhung der Mindestbreite */
-    white-space: nowrap; /* Verhindert, dass der Text umbricht */
-}
-
-/* 🟢 Hintergrund & Rahmen für das Pop-up */
-/* Pop-up Hintergrundfarbe & Styling fixen */
+/* 🟢 Popup-Fenster vergrößern und via Flex layouten */
 .leaflet-popup-content-wrapper {
     background: rgba(114, 167, 176, 0.9) !important;
     max-width: none !important;
-    min-width: 650px !important;  /* Breiter als die Tabelle */
-    overflow-x: hidden !important;  /* Horizontal Scroll deaktiviert */
+
+    /* Popup größer machen */
+    min-width: 1000px !important;
+    min-height: 700px !important;
+
+    overflow: hidden !important;
+    display: flex;          /* => Flex-Container */
+    flex-direction: column; /* => Spalten-Layout */
 }
 
-/* 🟢 Wetterdaten Tabelle */
-.popup-table {
-    width: 100% !important;  /* Tabelle nimmt die volle Breite des Pop-ups ein */
-    min-width: 600px !important; /* Breite für komplette Jahreszeiten */
-    border-collapse: collapse;
-    table-layout: auto !important;
-    overflow-x: hidden !important;  /* Horizontal Scroll entfernen */
-    display: block;
-    max-height: none !important; /* Vertikales Scrollen entfernen */
-    overflow-y: hidden !important; /* Vertikales Scrollen verhindern */
-}
-
-/* 🟢 Tabellenkopf */
-.popup-table thead {
-    background-color: rgba(0, 128, 192, 0.6) !important;
-}
-
-.popup-table th {
-    padding: 6px;
-    text-align: center;
-    color: rgb(1, 43, 63);
-    white-space: nowrap;
-}
-
-/* 🟢 Tabelleninhalt */
-/* Min/Max Werte untereinander darstellen */
-.popup-table td {
-    padding: 6px;
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    white-space: nowrap;
-}
-
-.popup-table td .min-max {
-    display: block;  /* Min und Max untereinander */
-    font-size: 12px;
-    line-height: 1.6; /* Etwas Abstand für bessere Lesbarkeit */
-}
-
-/* 🟢 Pop-up Container: Kein horizontales Scrollen, vertikales bleibt */
-.popup-table-container {
-    width: 100% !important;  /* Nimmt die volle Breite des Pop-ups ein */
-    max-width: 100% !important;
-    overflow-x: hidden !important;  /* Entfernt horizontales Scrollen */
-    overflow-y: auto !important;  /* Vertikales Scrollen bleibt erlaubt */
-    max-height: 300px; /* Falls nötig, Begrenzung der Höhe */
-     margin: 0 !important;
-}
-
-/* 🟢 Tabelle bleibt innerhalb des Containers */
-.popup-table {
-    width: 100% !important;  /* Volle Breite nutzen */
-    max-width: 100% !important;
-    table-layout: fixed !important; /* Spalten werden gleichmäßig verteilt */
-}
-
-/* 🟢 Spalteninhalt flexibler machen */
-.popup-table th,
-.popup-table td {
-    white-space: normal !important;  /* Erlaubt Zeilenumbruch */
-    word-wrap: break-word; /* Falls zu lange Wörter vorhanden sind */
-    overflow: hidden;
-}
-
-/* 🟢 Keine Überbreite im Pop-up */
 .leaflet-popup-content {
-    width: auto !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important; /* KEIN seitliches Scrollen */
-    overflow-y: auto !important;   /* ABER vertikales Scrollen bleibt */
+    width: 100% !important;
+    flex: 1;                /* Innerer Bereich dehnt sich */
+    display: flex;
+    flex-direction: column;
+    margin: 0;              /* Verhindert randumfließende Abstände */
+    overflow: hidden !important;
 }
 
+/* 🟢 Kopfzeile / Header (z.B. Wetterstation: XYZ) */
+.popup-header {
+    flex: 0 0 auto;
+    padding: 6px;
+    white-space: nowrap;
+}
 
+/* 🟢 Container für Tabelle oder Charts */
+.popup-table-container {
+    flex: 1 1 auto;         /* Füllt den restlichen Platz */
+    overflow: auto !important;
+    margin: 0 !important;
+}
 
-/* 🟢 Alternierende Farben für Zeilen */
+/* 🟢 Tabelle selbst */
+.popup-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.popup-table th, .popup-table td {
+    padding: 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .popup-table tr:nth-child(even) td {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Container für die Navigationspfeile und Seitenanzeige */
+/* 🟢 Container für Diagramme (Seite 2) */
+.popup-charts-container {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;   /* Diagramm mittig */
+    align-items: center;       /* Horizontal & vertikal ausrichten */
+}
+
+/* 🟢 Canvas wird an die Größe der parent-Box angepasst */
+.popup-charts-container canvas {
+    width: 100% !important;   /* Nimmt die volle Container-Breite */
+    height: 100% !important;  /* Nimmt die volle Container-Höhe */
+    max-width: 100%;          /* Verhindert, dass es zu breit wird */
+    max-height: 100%;
+}
+
+/* 🟢 Footer / Pagination */
 .popup-pagination {
+    flex: 0 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 15px;
-    margin-top: 15px;
     font-size: 16px;
     font-weight: bold;
     color: #fff;
+    padding: 10px 0;
+    background: transparent;
 }
 
-/* Pfeile */
 .popup-pagination button {
     background-color: rgba(0, 128, 192, 0.7);
     border: none;
@@ -474,30 +447,27 @@ body, html {
     transition: all 0.2s ease-in-out;
 }
 
-/* Hover-Effekt für die Pfeile */
 .popup-pagination button:hover {
     background-color: rgba(0, 150, 255, 0.9);
     transform: scale(1.1);
 }
 
-/* Styling für die Seitenanzeige */
 .page-indicator {
     font-size: 18px;
     color: white;
     font-weight: bold;
 }
 
-/* Standardmäßige Anzeige der ersten Seite */
+/* Standard: erste Seite sichtbar, zweite hidden */
 .popup-table-container.page-1 {
     display: block;
 }
 
-/* Standardmäßige Ausblendung der zweiten Seite */
 .popup-table-container.page-2 {
     display: none;
 }
 
-/* Leere Seite mit Nachricht */
+/* Falls zweite Seite mal leer ist */
 .empty-page {
     text-align: center;
     font-size: 18px;
