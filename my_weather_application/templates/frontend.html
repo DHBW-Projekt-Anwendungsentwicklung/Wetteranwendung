@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interaktive Weltkarte</title>
+    <title>Weltkarte mit Wetterdaten</title>
     {% load static %}
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
@@ -17,11 +17,11 @@
     <div id="sidebar">
         <div class="field">
             <label for="latitude">Breitengrad:</label>
-            <input type="text" id="latitude" placeholder="z.B. 51.5074">
+            <input type="text" id="latitude" placeholder="z.B. 48.060639">
         </div>
         <div class="field">
             <label for="longitude">Längengrad:</label>
-            <input type="text" id="longitude" placeholder="z.B. -0.1278">
+            <input type="text" id="longitude" placeholder="z.B. 8.534250">
         </div>
         <div class="field">
             <label for="radius">Radius: <span id="radiusValue">50</span> km</label>

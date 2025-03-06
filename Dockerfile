@@ -22,4 +22,4 @@ RUN python manage.py collectstatic --noinput || true
 EXPOSE 8000
 
 # Starte die Django-App mit daphne für ASGI (falls Websockets geplant sind) oder Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "weather_application.wsgi:application"]
+CMD ["gunicorn", "--workers=3", "--bind", "0.0.0.0:8000", "weather_application.wsgi:application"]

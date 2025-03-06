@@ -388,73 +388,73 @@ function buildChartsOnPage2() {
             labels: years,
             datasets: [
                 {
-                    label: 'Jährlicher Mittelwert Max',
+                    label: 'Jährlicher Mittelwert Min',
                     data: yearlyMinValues,
-                    borderColor: 'blue',
-                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                    borderColor: 'Turquoise',
+                    backgroundColor: 'Turquoise',
                     spanGaps: true
                 },
                 {
-                    label: 'Jährlicher Mittelwert Min',
+                    label: 'Jährlicher Mittelwert Max',
                     data: yearlyMaxValues,
                     borderColor: 'blue',
-                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    backgroundColor: 'blue',
                     spanGaps: true
                 },
                 {
                     label: 'Frühling Min',
                     data: springMinValues,
-                    borderColor: 'green',
-                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    borderColor: 'lightgreen',
+                    backgroundColor: 'lightgreen',
                     spanGaps: true
                 },
                 {
                     label: 'Frühling Max',
                     data: springMaxValues,
                     borderColor: 'green',
-                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    backgroundColor: 'green',
                     spanGaps: true
                 },
                 {
                     label: 'Sommer Min',
                     data: summerMinValues,
-                    borderColor: '#FF8800',
-                    backgroundColor: '#FF8800',
+                    borderColor: '#FFD700',
+                    backgroundColor: '#FFD700',
                     spanGaps: true
                 },
                 {
                     label: 'Sommer Max',
                     data: summerMaxValues,
-                    borderColor: '#FF8800',
-                    backgroundColor: '#FF8800',
+                    borderColor: 'darkorange',
+                    backgroundColor: 'darkorange',
                     spanGaps: true
                 },
                 {
                     label: 'Herbst Min',
                     data: autumnMinValues,
-                    borderColor: '#44322d',
-                    backgroundColor: '#44322d',
+                    borderColor: 'saddlebrown',
+                    backgroundColor: 'saddlebrown',
                     spanGaps: true
                 },
                 {
-                    label: 'Herbst Min',
+                    label: 'Herbst Max',
                     data: autumnMaxValues,
-                    borderColor: '#44322d',
-                    backgroundColor: '#44322d',
+                    borderColor: 'brown',
+                    backgroundColor: 'brown',
                     spanGaps: true
                 },
                 {
                     label: 'Winter Min',
                     data: winterMinValues,
-                    borderColor: 'grey',
-                    backgroundColor: 'rgba(128,0,128,0.1)',
+                    borderColor: 'lightgray',
+                    backgroundColor: 'lightgray',
                     spanGaps: true
                 },
                 {
                     label: 'Winter Max',
                     data: winterMaxValues,
-                    borderColor: 'grey',
-                    backgroundColor: 'rgba(255,0,255,0.1)',
+                    borderColor: 'gray',
+                    backgroundColor: 'gray',
                     spanGaps: true
                 },
             ]
@@ -499,8 +499,8 @@ function populateYearDropdowns() {
     }
 
     // Standardwerte
-    yearFrom.value = 1800;
-    yearTo.value = 2025;
+    yearFrom.value = 2000;
+    yearTo.value = 2024;
 }
 
 function validateMaxStations() {

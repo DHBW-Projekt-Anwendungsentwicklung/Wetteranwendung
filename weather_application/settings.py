@@ -63,6 +63,15 @@ DATABASES = {
     }
 }
 
+# Caching mit Django
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "weather_cache",
+    }
+}
+
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

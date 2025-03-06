@@ -9,6 +9,7 @@ import requests
 import gzip
 import csv
 from collections import defaultdict
+from django.core.cache import cache
 
 
 def my_weather_application(request):
@@ -69,28 +70,21 @@ def stations_in_radius_view(request):
 # CSV.GZ-Auswertung -> TMIN/TMAX => pro Jahr + Jahreszeiten
 # -----------------------------------------------------------
 
+from django.core.cache import cache  # Importiere Django Caching
+
 def station_calculations_view(request):
-    """
-    Lädt CSV.GZ von NOAA by_station, parst TMIN/TMAX.
-    Berechnet:
-       - yearly_min_mean (Durchschnitt aller TMIN im Jahr)
-       - yearly_max_mean (Durchschnitt aller TMAX im Jahr)
-       - saisonale Min/Max (Winter, Frühling, Sommer, Herbst)
-         -> Winter(Y) = Dez(Y-1) + Jan(Y) + Feb(Y)
-    Gibt ein Array zurück mit:
-       [
-         {
-           "year": 2020,
-           "yearly_min_mean": "...",
-           "spring": "...",
-           ...
-         },
-         ...
-       ]
-    """
     station_id = request.GET.get('station_id')
     if not station_id:
         return JsonResponse({"error": "No station_id provided"}, status=400)
+
+    cache_key = f"station_data_{station_id}"
+    cached_data = cache.get(cache_key)
+
+    if cached_data:
+        print(f"Cache-Hit für Station {station_id}")
+        return JsonResponse(cached_data, safe=False)
+
+    print(f"Cache-Miss für Station {station_id}, Daten werden geladen...")
 
     try:
         year_from = int(request.GET.get('yearFrom', 1800))
@@ -101,23 +95,17 @@ def station_calculations_view(request):
 
     local_file = download_csv_if_needed(station_id)
     if not local_file:
-        # Keine Daten => leeres Array
         return JsonResponse([], safe=False)
 
-    # 1) Gesamte CSV parsen
     all_records = parse_ghcn_csv_gz(local_file)
-
-    # 2) Filter: Wir nehmen ab (year_from - 1), damit der Dez des Vorjahres
-    #    für das "erste" Jahr im Bereich verfügbar ist.
-    #    Bis year_to reicht, um die Daten nicht unnötig zu vergrößern.
-    daily_records = [
-        r for r in all_records
-        if (year_from - 1) <= r["year"] <= year_to
-    ]
-
-    # 3) Jahresstatistiken berechnen
+    daily_records = [r for r in all_records if (year_from - 1) <= r["year"] <= year_to]
     stats = calc_yearly_stats(daily_records, year_from, year_to)
+
+    # Speichere die Ergebnisse für 10 Minuten im Cache
+    cache.set(cache_key, stats, timeout=600)
+
     return JsonResponse(stats, safe=False)
+
 
 
 def download_csv_if_needed(station_id):
