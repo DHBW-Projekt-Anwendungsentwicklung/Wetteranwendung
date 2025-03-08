@@ -11,6 +11,7 @@ services:
     volumes:
       - .:/app
     restart: always
+    command: gunicorn -w 4 -b 0.0.0.0:8000 weather_application.wsgi:application
     deploy:
       resources:
         limits:
