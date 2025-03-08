@@ -3,6 +3,8 @@
  *************************/
 
 // Karte initialisieren
+const API_BASE_URL = "http://127.0.0.1:8000";
+
 var map = L.map('map', {
     center: [0, 0],
     zoom: 3,
@@ -21,23 +23,20 @@ var bounds = [
 ];
 map.setMaxBounds(bounds);
 
-// TileLayer hinzufügen (OpenStreetMap)
+// OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Aktuellen Wert des Radius-Range-Inputs anzeigen
 function updateRadiusValue() {
     var radius = document.getElementById('radius').value;
     document.getElementById('radiusValue').textContent = radius;
 }
 
-// Globale Variablen für Marker und Kreis
 var currentPing = null;
 var radiusCircle = null;
 var stationMarkers = [];
 
-// Eigenes Icon für den roten Pin
 var customIcon = L.icon({
     iconUrl: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
     iconSize: [15, 25],
@@ -45,14 +44,12 @@ var customIcon = L.icon({
     popupAnchor: [0, -12]
 });
 
-// Eigenes Icon für die blauen Stations-Pins
 var blueIcon = L.icon({
     iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/88/Map_marker.svg',
     iconSize: [20, 30],
     iconAnchor: [10, 30]
 });
 
-// Klick auf die Karte => roter Pin
 map.on('click', function (e) {
     if (currentPing !== null) {
         map.removeLayer(currentPing);
@@ -70,7 +67,6 @@ map.on('click', function (e) {
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
-// Stationssuche
 function findStationsInRadius() {
     var lat = parseFloat(document.getElementById("latitude").value);
     var lon = parseFloat(document.getElementById("longitude").value);
@@ -82,13 +78,11 @@ function findStationsInRadius() {
         return;
     }
 
-    // Roten Pin angeben
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
     currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
 
-    // Alten Kreis + Station-Marker entfernen
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
@@ -96,7 +90,6 @@ function findStationsInRadius() {
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
-    // Neuer Kreis
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
         fillColor: 'rgba(22, 84, 255, 0.5)',
@@ -106,8 +99,7 @@ function findStationsInRadius() {
 
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
-    // Daten fetchen
-    fetch(`/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
+    fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
         .then(response => response.json())
         .then(data => {
             console.log("Gefundene Stationen:", data);
@@ -127,8 +119,8 @@ function findStationsInRadius() {
                     }
                 );
 
-                // Klick => Wetterdaten
                 marker.on('click', function () {
+                    map.flyTo(marker.getLatLng(), 8);
                     loadStationCalculations(station.station_id);
                 });
 
@@ -142,7 +134,6 @@ function findStationsInRadius() {
         });
 }
 
-// Liste in der Sidebar zeigen
 function displayStationsInSidebar(data) {
     var oldList = document.getElementById("stationList");
     if (oldList) {
@@ -169,10 +160,16 @@ function displayStationsInSidebar(data) {
             <p><b>Längengrad:</b> ${station.longitude}</p>
         `;
 
-        // Klick auf Sidebar-Eintrag => Daten laden
         item.addEventListener('click', () => {
-            loadStationCalculations(station.station_id);
-        });
+    loadStationCalculations(station.station_id); // Wetterdaten laden
+
+    let selectedMarker = stationMarkers.find(m => String(m.options.stationId) === String(station.station_id));
+
+    if (selectedMarker) {
+        map.flyTo(selectedMarker.getLatLng(), 8);
+    }
+});
+
 
         stationList.appendChild(item);
     });
@@ -181,12 +178,12 @@ function displayStationsInSidebar(data) {
     sidebar.appendChild(stationList);
 }
 
-// Daten für Station laden => Popup
+// Popup
 function loadStationCalculations(stationId) {
     let yearFrom = parseInt(document.getElementById('yearFrom').value, 10) || 1800;
     let yearTo   = parseInt(document.getElementById('yearTo').value, 10)   || 2025;
 
-    fetch(`/station_calculations/?station_id=${stationId}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
+    fetch(`${API_BASE_URL}/station_calculations/?station_id=${stationId}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
         .then(response => response.json())
         .then(data => {
             if (!Array.isArray(data)) {
@@ -219,12 +216,9 @@ function loadStationCalculations(stationId) {
         });
 }
 
-// Baut HTML für das Berechnungs-Popup
 function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
-    // 1) Daten parsen
     let statsArray = JSON.parse(decodeURIComponent(encodedData));
 
-    // 2) Nur vorhandene Jahre extrahieren
     let tableRows = "";
     statsArray.forEach(row => {
         if (row.yearly_min_mean) {  // Nur wenn es Daten gibt
@@ -241,7 +235,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
         }
     });
 
-    // Falls keine Daten vorhanden sind, nicht anzeigen
     if (!tableRows) {
         return `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
                 <div class="popup-table-container">
@@ -249,7 +242,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
                 </div>`;
     }
 
-    // Seite 1 (Tabelle)
     let page1Content = `
   <div class="popup-header">
     Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})
@@ -273,7 +265,7 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
   </div>
 `;
 
-    // Seite 2 (Chart)
+    // Grafik
     let page2Content = `
       <div class="popup-table-container page-2" style="display: none;">
         <div id="chartData" style="display:none;">${encodedData}</div>
@@ -283,7 +275,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
       </div>
     `;
 
-    // Pagination-Steuerung
     let paginationControls = `
       <div class="popup-pagination">
         <button class="prev-page" onclick="switchPopupPage(-1)">←</button>
@@ -296,27 +287,23 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
 }
 
 
-// Seite wechseln
 function switchPopupPage(direction) {
     let page1 = document.querySelector(".popup-table-container.page-1");
     let page2 = document.querySelector(".popup-table-container.page-2");
     let pageIndicator = document.getElementById("currentPage");
 
     if (direction === 1) {
-        // zu Seite 2
         page1.style.display = "none";
         page2.style.display = "block";
         pageIndicator.textContent = "2";
-        buildChartsOnPage2(); // Diagramm erzeugen
+        buildChartsOnPage2();
     } else {
-        // zurück zu Seite 1
         page1.style.display = "block";
         page2.style.display = "none";
         pageIndicator.textContent = "1";
     }
 }
 
-// Diagramm erstellen (Seite 2)
 function buildChartsOnPage2() {
     let dataDiv = document.getElementById("chartData");
     if (!dataDiv) return;
@@ -330,7 +317,6 @@ function buildChartsOnPage2() {
         return;
     }
 
-    // Arrays
     let years = [];
 
     let yearlyMinValues = [];
@@ -460,7 +446,7 @@ function buildChartsOnPage2() {
             ]
         },
         options: {
-            responsive: true,          // an Container anpassen
+            responsive: true,
             maintainAspectRatio: false,
             scales: {
                 y: {
@@ -481,7 +467,6 @@ function buildChartsOnPage2() {
     });
 }
 
-// Dropdowns vorbesetzen
 function populateYearDropdowns() {
     var yearFrom = document.getElementById('yearFrom');
     var yearTo = document.getElementById('yearTo');
@@ -498,7 +483,6 @@ function populateYearDropdowns() {
         yearTo.appendChild(optionTo);
     }
 
-    // Standardwerte
     yearFrom.value = 2000;
     yearTo.value = 2024;
 }
@@ -512,5 +496,4 @@ function validateMaxStations() {
     }
 }
 
-// Beim Laden einmal ausführen
 populateYearDropdowns();

@@ -340,8 +340,10 @@ body, html {
 
 .leaflet-popup-content-wrapper {
     background: rgba(114, 167, 176, 0.9) !important;
-    max-width: none !important;
-    min-width: 1000px !important;
+    min-width: 40vw !important;
+    max-width: 80vw !important;
+    min-height: 300px !important;
+    max-height: 85vh !important;
     overflow: hidden !important;
     display: flex;
     flex-direction: column;
@@ -363,7 +365,8 @@ body, html {
 }
 
 .popup-table-container {
-    flex: 1 1 auto;         /* Füllt den restlichen Platz */
+    flex: 1 1 auto;
+    max-height: 60vh !important;
     overflow: auto !important;
     margin: 0 !important;
 }
