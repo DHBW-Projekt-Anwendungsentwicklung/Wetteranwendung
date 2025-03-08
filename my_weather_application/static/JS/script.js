@@ -251,27 +251,27 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
 
     // Seite 1 (Tabelle)
     let page1Content = `
-      <div class="popup-header">
-        Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})
-      </div>
-      <div class="popup-table-container page-1">
-        <table class="popup-table">
-          <thead>
-            <tr>
-              <th>Jahr</th>
-              <th>Jährliche Mittelwerte</th>
-              <th>Frühling</th>
-              <th>Sommer</th>
-              <th>Herbst</th>
-              <th>Winter</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>
-      </div>
-    `;
+  <div class="popup-header">
+    Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})
+  </div>
+  <div class="popup-table-container page-1" style="max-height: 400px; overflow-y: auto;">
+    <table class="popup-table">
+      <thead>
+        <tr>
+          <th>Jahr</th>
+          <th>Jährliche Mittelwerte</th>
+          <th>Frühling</th>
+          <th>Sommer</th>
+          <th>Herbst</th>
+          <th>Winter</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows}
+      </tbody>
+    </table>
+  </div>
+`;
 
     // Seite 2 (Chart)
     let page2Content = `

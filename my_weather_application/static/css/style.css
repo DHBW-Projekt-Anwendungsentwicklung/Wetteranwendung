@@ -359,7 +359,6 @@ body, html {
 
     /* Popup größer machen */
     min-width: 1000px !important;
-    min-height: 700px !important;
 
     overflow: hidden !important;
     display: flex;          /* => Flex-Container */
