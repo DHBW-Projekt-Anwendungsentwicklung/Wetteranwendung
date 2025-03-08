@@ -13,7 +13,6 @@ class MyWeatherApplicationConfig(AppConfig):
     name = 'my_weather_application'
 
     def ready(self):
-        # Wird aufgerufen, sobald Django diese App initialisiert
         from . import station_data
-        station_data.load_station_data()  # Beim Start einmalig Daten laden
+        station_data.load_station_data()
 

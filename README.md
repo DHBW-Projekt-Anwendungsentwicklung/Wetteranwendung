@@ -25,7 +25,7 @@ Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
 Öffne PowerShell oder die Eingabeaufforderung (CMD) und klone das GitHub-Repository:
 
 ```sh
-git clone https://github.com/dein-benutzername/wetteranwendung.git
+git clone https://github.com/DHBW-Projekt-Anwendungsentwicklung/Wetteranwendung.git
 cd wetteranwendung
 ```
 

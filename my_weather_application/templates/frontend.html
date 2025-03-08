@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weltkarte mit Wetterdaten</title>
     {% load static %}
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
-    <!-- Dein eigenes CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <!-- Chart.js von einem CDN laden -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -41,7 +38,6 @@
             </div>
         </div>
 
-
         <div class="field">
             <label for="maxStations">Anzahl Ergebnisse:</label>
             <input type="number" id="maxStations" placeholder="z.B. 5" min="1" max="10" step="1" onblur="validateMaxStations()">
@@ -50,9 +46,7 @@
         <button onclick="findStationsInRadius()">Suche Wetterstationen</button>
     </div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <!-- Dein eigenes JavaScript  -->
     <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
