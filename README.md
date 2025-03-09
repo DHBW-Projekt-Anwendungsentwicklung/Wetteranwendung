@@ -61,7 +61,7 @@ docker-compose up -d
 ## 5. Anwendung im Browser öffnen
 Sobald Docker läuft, kannst du die Anwendung unter folgender URL aufrufen:
 
-http://localhost:8000/
+http://127.0.0.1:8000/
 
 ## 6. Container stoppen und neustarten
 Falls du den Container stoppen möchtest:
