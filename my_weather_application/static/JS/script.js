@@ -64,15 +64,27 @@ map.on('click', function (e) {
 });
 
 function findStationsInRadius() {
-    var lat = parseFloat(document.getElementById("latitude").value);
-    var lon = parseFloat(document.getElementById("longitude").value);
-    var radius = parseFloat(document.getElementById("radius").value);
-    var maxStations = parseInt(document.getElementById("maxStations").value, 10);
+    const floatRegex = /^-?\d+(\.\d+)?$/;
+    const intRegex = /^-?\d+$/;
 
-    if (isNaN(lat) || isNaN(lon) || isNaN(radius) || isNaN(maxStations)) {
-        alert("Bitte gültige Werte für Breitengrad, Längengrad und Ergebnissanzahl eingeben!");
+    let latStr = document.getElementById("latitude").value.trim();
+    let lonStr = document.getElementById("longitude").value.trim();
+    let radiusStr = document.getElementById("radius").value.trim();
+    let maxStationsStr = document.getElementById("maxStations").value.trim();
+
+    if (!floatRegex.test(latStr) || 
+        !floatRegex.test(lonStr) || 
+        !floatRegex.test(radiusStr) ||
+        !intRegex.test(maxStationsStr)) 
+    {
+        alert("Bitte gültige Werte für Breitengrad, Längengrad und Anzahl eingeben!");
         return;
     }
+
+    let lat = parseFloat(latStr);
+    let lon = parseFloat(lonStr);
+    let radius = parseFloat(radiusStr);
+    let maxStations = parseInt(maxStationsStr, 10);
 
     if (currentPing !== null) {
         map.removeLayer(currentPing);
