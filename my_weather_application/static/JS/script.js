@@ -13,10 +13,8 @@ var map = L.map('map', {
     worldCopyJump: true
 });
 
-// Zoom-Steuerung nach unten rechts
 map.zoomControl.setPosition('bottomright');
 
-// Begrenzung der Karte (bound-fix)
 var bounds = [
     [-85, -Infinity],
     [85, Infinity]

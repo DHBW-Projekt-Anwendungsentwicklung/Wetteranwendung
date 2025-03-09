@@ -28,9 +28,6 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 def stations_in_radius_view(request):
-    """
-    Sucht nahe Wetterstationen im Umkreis (lat,lon,radius).
-    """
     try:
         lat = float(request.GET.get('latitude', 0))
         lon = float(request.GET.get('longitude', 0))
@@ -52,7 +49,6 @@ def stations_in_radius_view(request):
     # sortieren + begrenzen
     nearest_stations = sorted(nearest_stations, key=lambda x: x["distance"])[:max_stations]
 
-    # JSON-Antwort
     response_data = []
     for item in nearest_stations:
         st = item["station"]
@@ -64,11 +60,6 @@ def stations_in_radius_view(request):
             "distance_km": round(item["distance"], 2)
         })
     return JsonResponse(response_data, safe=False)
-
-
-# -----------------------------------------------------------
-# CSV.GZ-Auswertung -> TMIN/TMAX => pro Jahr + Jahreszeiten
-# -----------------------------------------------------------
 
 from django.core.cache import cache  # Importiere Django Caching
 
@@ -101,18 +92,11 @@ def station_calculations_view(request):
     daily_records = [r for r in all_records if (year_from - 1) <= r["year"] <= year_to]
     stats = calc_yearly_stats(daily_records, year_from, year_to)
 
-    # Speichere die Ergebnisse für 10 Minuten im Cache
     cache.set(cache_key, stats, timeout=600)
 
     return JsonResponse(stats, safe=False)
 
-
-
 def download_csv_if_needed(station_id):
-    """
-    Holt https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/{station_id}.csv.gz
-    speichert es unter data_cache/{station_id}.csv.gz
-    """
     cache_dir = os.path.join(os.path.dirname(__file__), "data_cache")
     os.makedirs(cache_dir, exist_ok=True)
 
@@ -140,12 +124,6 @@ def download_csv_if_needed(station_id):
 
 
 def parse_ghcn_csv_gz(filepath):
-    """
-    CSV.GZ: ID,DATE,ELEMENT,DATA VALUE,...
-    TMIN/TMAX => value in Zehntel-Grad => /10
-    Beispiel: "ACW00011604,20210101,TMAX,255,..."
-      => year=2021, month=01, day=01, element="TMAX", value=25.5
-    """
     records = []
     with gzip.open(filepath, "rt") as f:
         reader = csv.reader(f)
@@ -184,49 +162,21 @@ def parse_ghcn_csv_gz(filepath):
 
 
 def calc_yearly_stats(daily_records, year_from, year_to):
-    """
-    Berechnet Jahres- und Jahreszeitenstatistiken für TMIN und TMAX.
-
-    - Findet das erste Jahr, für das Daten existieren, und beginnt die Tabelle erst ab dort.
-    - Falls ein Jahr mitten im Jahr beginnt, werden vorherige Monate mit "Keine Daten" gefüllt.
-
-    - yearly_min_mean: Durchschnitt aller TMIN pro Kalenderjahr (Jan-Dez)
-    - yearly_max_mean: Durchschnitt aller TMAX pro Kalenderjahr (Jan-Dez)
-    - Winter(Y) = Dez(Y-1), Jan(Y), Feb(Y)
-    - Frühling: Mär, Apr, Mai
-    - Sommer: Jun, Jul, Aug
-    - Herbst: Sep, Okt, Nov
-
-    Gibt Liste mit Dicts zurück:
-    [
-      {
-        "year": 2020,
-        "yearly_min_mean": "...",
-        "spring": "...",
-        ...
-      },
-      ...
-    ]
-    """
-
     # Daten nach (year, month) bündeln
     data_by_year_month = defaultdict(lambda: {"TMIN": [], "TMAX": []})
     for r in daily_records:
         y, m = r["year"], r["month"]
         data_by_year_month[(y, m)][r["element"]].append(r["value"])
 
-    # Finde das erste Jahr mit verfügbaren Daten
     available_years = sorted(set(y for y, _ in data_by_year_month.keys()))
     if not available_years:
-        return []  # Keine Daten vorhanden
+        return []
 
     first_available_year = max(min(available_years), year_from)
 
     results = []
 
-    # Schleife über den gewünschten Jahresbereich, aber erst ab dem ersten verfügbaren Jahr
     for year in range(first_available_year, year_to + 1):
-        # 1) Jahresdurchschnittswerte (Jan-Dez)
         tmin_list = []
         tmax_list = []
         missing_months = []
@@ -236,7 +186,7 @@ def calc_yearly_stats(daily_records, year_from, year_to):
                 tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
                 tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
             else:
-                missing_months.append(m)  # Fehlt dieser Monat komplett?
+                missing_months.append(m)
 
         if tmin_list:
             yearly_min_mean = round(sum(tmin_list) / len(tmin_list), 1)
@@ -248,7 +198,6 @@ def calc_yearly_stats(daily_records, year_from, year_to):
         else:
             yearly_max_mean = None
 
-        # Hilfsfunktion für min-/max-Text
         def build_temp_text(min_vals, max_vals, missing=False):
             if missing:
                 return "Keine Daten"
@@ -258,7 +207,6 @@ def calc_yearly_stats(daily_records, year_from, year_to):
             else:
                 return "Keine Daten"
 
-        # Hilfsfunktion für Jahreszeiten-Mittelwerte
         def gather_avg_for_pairs(pairs):
             tmp_min = []
             tmp_max = []
@@ -269,7 +217,6 @@ def calc_yearly_stats(daily_records, year_from, year_to):
                 tmp_max.extend(data_by_year_month[(yy, mm)]["TMAX"])
             return build_temp_text(tmp_min, tmp_max, missing)
 
-        # 2) Jahreszeiten definieren
         winter_pairs = [(year - 1, 12), (year, 1), (year, 2)]
         spring_pairs = [(year, 3), (year, 4), (year, 5)]
         summer_pairs = [(year, 6), (year, 7), (year, 8)]
@@ -280,7 +227,6 @@ def calc_yearly_stats(daily_records, year_from, year_to):
         summer_str = gather_avg_for_pairs(summer_pairs)
         autumn_str = gather_avg_for_pairs(autumn_pairs)
 
-        # 3) Ausgabe-Strings für das Jahr
         yearly_str = build_temp_text(
             tmin_list, tmax_list, missing=(len(tmin_list) == 0 and len(tmax_list) == 0)
         )

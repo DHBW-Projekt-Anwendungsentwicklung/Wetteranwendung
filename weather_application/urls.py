@@ -20,7 +20,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Alles, was nicht admin/ ist, geht an my_weather_application
     path('', include('my_weather_application.urls')),
 ]
 

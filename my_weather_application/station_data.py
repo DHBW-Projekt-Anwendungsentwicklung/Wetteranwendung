@@ -2,7 +2,6 @@
 
 import requests
 
-# Globale Variable, in der wir die Stationsdaten im RAM halten
 STATIONS = []
 
 def load_station_data():
@@ -18,7 +17,6 @@ def load_station_data():
     lines = response.text.splitlines()
     parsed_stations = []
     for line in lines:
-        # Wir benötigen mindestens Spalte 71 (Name endet bei Index 70)
         if len(line) < 71:
             continue
 
