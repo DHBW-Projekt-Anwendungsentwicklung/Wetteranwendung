@@ -70,7 +70,7 @@ function findStationsInRadius() {
     var maxStations = parseInt(document.getElementById("maxStations").value, 10);
 
     if (isNaN(lat) || isNaN(lon) || isNaN(radius) || isNaN(maxStations)) {
-        alert("Bitte gültige Werte für Breite, Länge, Radius und Anzahl eingeben!");
+        alert("Bitte gültige Werte für Breitengrad, Längengrad und Ergebnissanzahl eingeben!");
         return;
     }
 
