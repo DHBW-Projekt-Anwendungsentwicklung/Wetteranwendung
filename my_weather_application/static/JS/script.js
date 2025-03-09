@@ -201,7 +201,10 @@ function loadStationCalculations(stationId) {
 
             if (station) {
                 station.bindPopup(popupHtml, {
-                    offset: [0, -10]
+                    offset: [0, -10],
+                    autoPan: true,
+                    autoPanPaddingTopLeft: [50, 50],
+                    autoPanPaddingBottomRight: [50, 50]
                 }).openPopup();
             } else {
                 alert("Fehler: Kein Marker für diese Station gefunden.");
@@ -293,10 +296,20 @@ function switchPopupPage(direction) {
         page2.style.display = "block";
         pageIndicator.textContent = "2";
         buildChartsOnPage2();
+        setTimeout(() => {
+            if (map._popup) {
+              map._popup._adjustPan();
+            }
+          }, 0);
     } else {
         page1.style.display = "block";
         page2.style.display = "none";
         pageIndicator.textContent = "1";
+        setTimeout(() => {
+            if (map._popup) {
+              map._popup._adjustPan();
+            }
+          }, 0);
     }
 }
 
