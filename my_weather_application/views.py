@@ -85,12 +85,19 @@ def station_calculations_view(request):
         year_to = 2025
 
     local_file = download_csv_if_needed(station_id)
-    if not local_file:
-        return JsonResponse([], safe=False)
+    if local_file is None:
+    # Fall: Download schlug fehl (z.B. keine Internetverbindung, 404, Timeout etc.)
+        return JsonResponse({
+            "error": "Daten konnten nicht abgerufen werden",
+            "reason": "download_failed"
+        }, status=400)
 
     all_records = parse_ghcn_csv_gz(local_file)
     daily_records = [r for r in all_records if (year_from - 1) <= r["year"] <= year_to]
     stats = calc_yearly_stats(daily_records, year_from, year_to)
+
+    if not stats:
+        return JsonResponse([], safe=False)
 
     cache.set(cache_key, stats, timeout=600)
 
