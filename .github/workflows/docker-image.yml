@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - branch-LucaSchneider
+      - branch-leon
+      - branch-tim
 
 jobs:
   deploy:
