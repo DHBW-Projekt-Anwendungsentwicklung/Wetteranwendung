@@ -183,10 +183,18 @@ function loadStationCalculations(stationId) {
         .then(response => response.json())
         .then(data => {
             if (!Array.isArray(data)) {
-                alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
+                if (data.reason === "download_failed") {
+                    alert("Daten können nicht abgerufen werden.");
+                } else {
+                    alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
+                }
                 return;
             }
-            if (!data.length) {
+            //if (data.reason === "download_failed") {
+            //    alert("Daten können nicht abgerufen werden."); 
+            //    return;
+            //}
+            if (!Array.isArray(data) || !data.length) {
                 alert("Keine Daten für diese Station.");
                 return;
             }
