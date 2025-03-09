@@ -15,7 +15,7 @@ body, html {
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    height: 100vh;
     width: 20% !important;
     min-width: 250px;
     max-width: 300px;
@@ -24,6 +24,8 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    overflow-x: hidden;
+    color: #fff;
 }
 
 @media (max-width: 1200px) {
@@ -43,7 +45,7 @@ body, html {
 }
 
 #sidebar h2 {
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: center;
     margin-bottom: 20px;
 }
@@ -58,15 +60,15 @@ body, html {
 }
 
 #sidebar label {
-    font-size: 16px;
-    color: rgb(0, 0, 0);
+    font-size: 20px;
+    color: #fff;
     display: block;
     margin-bottom: 5px;
 }
 
 #radiusValue {
-    font-size: 16px;
-    color: rgb(0, 0, 0);
+    font-size: 20px;
+    color: #fff;
     text-align: center;
     margin-top: 5px;
 }
@@ -78,21 +80,31 @@ body, html {
     font-size: 16px;
     border: none;
     border-radius: 4px;
-    background-color: #155B67;
-    color: rgb(0, 0, 0);
+    background-color: rgba(0, 128, 192, 0.4);
+    color: #fff;
     transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#sidebar select option {
+    background-color: rgba(0, 0, 0, 0.184);
+    color: #fff;
+}
+
+#sidebar input[type="text"]::placeholder {
+    color: #fff;
+    opacity: 0.7;
 }
 
 #sidebar input[type="text"]:hover,
 #sidebar select:hover {
-    background-color: rgba(0, 150, 255, 0.8);
+    background-color: rgba(0, 150, 255, 0.4);
     transform: scale(1.02);
 }
 
 #sidebar input[type="text"]:focus,
 #sidebar select:focus {
     outline: none;
-    background-color: rgba(0, 180, 255, 0.9);
+    background-color: rgba(0, 175, 250, 0.6);
     transform: scale(1.03);
 }
 
@@ -100,7 +112,7 @@ body, html {
     -webkit-appearance: none;
     width: 100%;
     height: 6px;
-    background: #155B67;
+    background: #108ca2;
     border-radius: 5px;
     outline: none;
     opacity: 0.9;
@@ -113,7 +125,7 @@ body, html {
     width: 14px;
     height: 14px;
     background: white;
-    border: 2px solid #155B67;
+    border: 2px solid #0f8ba1;
     border-radius: 50%;
     cursor: pointer;
 }
@@ -122,43 +134,56 @@ body, html {
     width: 14px;
     height: 14px;
     background: white;
-    border: 2px solid #155B67;
+    border: 2px solid #0f8ba1;
     border-radius: 50%;
     cursor: pointer;
 }
 
 #sidebar button {
     width: 100%;
-    padding: 10px;
-    background-color: #008b8b;
-    color: white;
-    border: none;
+    padding: 8px 16px;
+    background-color: #0f8ba1;
+    color: #fff;
+    border: 1px solid black;
     border-radius: 5px;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     font-family: Roboto, sans-serif;
     transition: background-color 0.2s ease-in-out;
 }
 
 #sidebar button:hover {
-    background-color: #006b6b;
+    background-color: #14b7d4;
+    transform: scale(1.03);
 }
 
 .year-container {
     display: flex;
     align-items: center;
     gap: 10px;
-    justify-content: space-between;
-    width: 105%;
 }
 
-.year-container select {
+.year-container input {
     flex: 1;
-    padding: 5px;
+    padding: 6px;
+    font-size: 12px;
+    border: none;
     border-radius: 4px;
-    border: 1px solid #ccc;
-    width: 50%;
-    min-width: 80px;
+    background-color: rgba(0, 150, 255, 0.4);
+    color: #fff;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.year-container input:hover {
+    background-color: rgba(0, 150, 255, 0.8);
+    transform: scale(1.02);
+}
+
+.year-container input:focus {
+    outline: none;
+    background-color: rgba(0, 180, 255, 0.9);
+    transform: scale(1.03);
 }
 
 .year-container span {
@@ -169,8 +194,8 @@ body, html {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    font-size: 16px;
-    color: rgb(0, 0, 0);
+    font-size: 18px;
+    color: #fff;
     margin-top: 5px;
 }
 
@@ -182,59 +207,12 @@ body, html {
     text-align: right;
 }
 
-/* Popup-Content */
-.leaflet-popup-content-wrapper {
-    width: 500px;  /* Breitere Popups */
-    background: rgba(114, 167, 176, 0.7) !important;
-    border-radius: 10px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-    color: white;
+.results-heading label {
+    text-align: left;
+    width: 100%;
+    padding-left: 5px;
 }
 
-.leaflet-popup-tip {
-    background: rgba(114, 167, 176, 0.7) !important;
-}
-
-.popup-content {
-    font-family: Roboto, sans-serif;
-    font-size: 12px;
-    text-align: center;
-    padding: 10px;
-}
-
-.popup-content h3 {
-    margin: 5px 0;
-    font-weight: bold;
-}
-
-/* Tab-Buttons */
-.tab-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.tab-button {
-    padding: 6px 12px;
-    background-color: rgba(0, 100, 160, 0.9);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.tab-button:hover {
-    background-color: rgba(0, 80, 140, 1);
-}
-
-.tab-button.active {
-    background-color: rgba(0, 60, 120, 1);
-    font-weight: bold;
-}
-
-/* Tabelle 1*/
 .table-container table {
     width: 100%;
     border-collapse: collapse;
@@ -242,8 +220,10 @@ body, html {
 }
 
 .table-container th {
-    background-color: rgba(0, 128, 192, 0.8);
-    color: white;
+    background-color: rgba(0, 128, 192, 0.4);
+    color: rgb(1, 43, 63);
+    font-size: 16px;
+    font-weight: normal;
     padding: 10px;
     text-align: center;
 }
@@ -252,9 +232,218 @@ body, html {
     background-color: rgba(255, 255, 255, 0.2);
     padding: 10px;
     text-align: center;
+    font-size: 16px;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .table-container tr:nth-child(even) td {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar input[type="number"] {
+    width: 100%;
+    padding: 6px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: rgba(0, 128, 192, 0.4);
+    color: #fff;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#sidebar input[type="number"]::placeholder {
+    color: #fff;
+    opacity: 0.7;
+}
+
+#sidebar input[type="number"]:hover {
+    background-color: rgba(0, 150, 255, 0.4);
+    transform: scale(1.02);
+}
+
+#sidebar input[type="number"]:focus {
+    outline: none;
+    background-color: rgba(0, 175, 250, 0.6);
+    transform: scale(1.03);
+}
+
+#stationList {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-top: 20px;
+    padding-right: 5px;
+}
+
+#stationList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#stationList::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 128, 192, 0.6);
+    border-radius: 4px;
+}
+
+#stationList::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.station-item {
+    background-color: rgba(0, 128, 192, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.station-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    color: #fff;
+}
+
+.station-item p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #fff;
+}
+
+.station-item:hover {
+    background-color: rgba(0, 150, 255, 0.4);
+    transform: scale(1.02);
+}
+
+.leaflet-tooltip {
+    background-color: rgba(114, 167, 176, 0.7) !important;
+    color: #fff !important;
+    border-radius: 6px;
+    border: none !important;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+    padding: 5px 10px;
+    font-size: 14px;
+    font-family: Roboto, sans-serif;
+    text-align: center;
+}
+
+.leaflet-tooltip-left,
+.leaflet-tooltip-right,
+.leaflet-tooltip-top,
+.leaflet-tooltip-bottom {
+    background-color: rgba(114, 167, 176, 0.7) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 6px;
+}
+
+.leaflet-popup-content-wrapper {
+    background: rgba(114, 167, 176, 0.9) !important;
+    max-width: none !important;
+    min-width: 1000px !important;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.leaflet-popup-content {
+    width: 100% !important;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    overflow: hidden !important;
+}
+
+.popup-header {
+    flex: 0 0 auto;
+    padding: 6px;
+    white-space: nowrap;
+}
+
+.popup-table-container {
+    flex: 1 1 auto;         /* Füllt den restlichen Platz */
+    overflow: auto !important;
+    margin: 0 !important;
+}
+
+.popup-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.popup-table th, .popup-table td {
+    padding: 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.popup-table tr:nth-child(even) td {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.popup-charts-container {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-charts-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.popup-pagination {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    padding: 10px 0;
+    background: transparent;
+}
+
+.popup-pagination button {
+    background-color: rgba(0, 128, 192, 0.7);
+    border: none;
+    color: white;
+    font-size: 20px;
+    padding: 8px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.popup-pagination button:hover {
+    background-color: rgba(0, 150, 255, 0.9);
+    transform: scale(1.1);
+}
+
+.page-indicator {
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+}
+
+.popup-table-container.page-1 {
+    display: block;
+}
+
+.popup-table-container.page-2 {
+    display: none;
+}
+
+.empty-page {
+    text-align: center;
+    font-size: 18px;
+    color: white;
+    margin-top: 20px;
 }

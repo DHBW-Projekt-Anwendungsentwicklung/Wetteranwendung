@@ -1,0 +1,19 @@
+name: wetteranwendung_dhbw
+
+services:
+  web:
+    build: .
+    container_name: wetteranwendung
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always
+    command: gunicorn -w 4 -b 0.0.0.0:8000 weather_application.wsgi:application
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "1GB"
