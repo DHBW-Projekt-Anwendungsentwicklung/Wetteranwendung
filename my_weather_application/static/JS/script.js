@@ -64,15 +64,27 @@ map.on('click', function (e) {
 });
 
 function findStationsInRadius() {
-    var lat = parseFloat(document.getElementById("latitude").value);
-    var lon = parseFloat(document.getElementById("longitude").value);
-    var radius = parseFloat(document.getElementById("radius").value);
-    var maxStations = parseInt(document.getElementById("maxStations").value, 10);
+    const floatRegex = /^-?\d+(\.\d+)?$/;
+    const intRegex = /^-?\d+$/;
 
-    if (isNaN(lat) || isNaN(lon) || isNaN(radius) || isNaN(maxStations)) {
-        alert("Bitte gültige Werte für Breite, Länge, Radius und Anzahl eingeben!");
+    let latStr = document.getElementById("latitude").value.trim();
+    let lonStr = document.getElementById("longitude").value.trim();
+    let radiusStr = document.getElementById("radius").value.trim();
+    let maxStationsStr = document.getElementById("maxStations").value.trim();
+
+    if (!floatRegex.test(latStr) || 
+        !floatRegex.test(lonStr) || 
+        !floatRegex.test(radiusStr) ||
+        !intRegex.test(maxStationsStr)) 
+    {
+        alert("Bitte gültige Werte für Breitengrad, Längengrad und Anzahl eingeben!");
         return;
     }
+
+    let lat = parseFloat(latStr);
+    let lon = parseFloat(lonStr);
+    let radius = parseFloat(radiusStr);
+    let maxStations = parseInt(maxStationsStr, 10);
 
     if (currentPing !== null) {
         map.removeLayer(currentPing);
@@ -183,10 +195,18 @@ function loadStationCalculations(stationId) {
         .then(response => response.json())
         .then(data => {
             if (!Array.isArray(data)) {
-                alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
+                if (data.reason === "download_failed") {
+                    alert("Daten können nicht abgerufen werden.");
+                } else {
+                    alert(data.error ? "Fehler: " + data.error : "Unbekannter Fehler");
+                }
                 return;
             }
-            if (!data.length) {
+            //if (data.reason === "download_failed") {
+            //    alert("Daten können nicht abgerufen werden."); 
+            //    return;
+            //}
+            if (!Array.isArray(data) || !data.length) {
                 alert("Keine Daten für diese Station.");
                 return;
             }
@@ -201,7 +221,10 @@ function loadStationCalculations(stationId) {
 
             if (station) {
                 station.bindPopup(popupHtml, {
-                    offset: [0, -10]
+                    offset: [0, -10],
+                    autoPan: true,
+                    autoPanPaddingTopLeft: [50, 50],
+                    autoPanPaddingBottomRight: [50, 50]
                 }).openPopup();
             } else {
                 alert("Fehler: Kein Marker für diese Station gefunden.");
@@ -293,10 +316,20 @@ function switchPopupPage(direction) {
         page2.style.display = "block";
         pageIndicator.textContent = "2";
         buildChartsOnPage2();
+        setTimeout(() => {
+            if (map._popup) {
+              map._popup._adjustPan();
+            }
+          }, 0);
     } else {
         page1.style.display = "block";
         page2.style.display = "none";
         pageIndicator.textContent = "1";
+        setTimeout(() => {
+            if (map._popup) {
+              map._popup._adjustPan();
+            }
+          }, 0);
     }
 }
 

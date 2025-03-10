@@ -187,7 +187,7 @@ body, html {
 }
 
 .year-container span {
-    color: white;
+    color: #fff;
 }
 
 .slider-labels {
@@ -439,6 +439,19 @@ body, html {
 
 .popup-table-container.page-2 {
     display: none;
+}
+
+.popup-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.popup-table-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 128, 192, 0.6);
+    border-radius: 4px;
+}
+
+.popup-table-container::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .empty-page {
