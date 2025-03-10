@@ -295,12 +295,12 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
     `;
 
     let paginationControls = `
-      <div class="popup-pagination">
-        <button class="prev-page" onclick="switchPopupPage(-1)">←</button>
-        <span class="page-indicator">Seite <span id="currentPage">1</span>/2</span>
-        <button class="next-page" onclick="switchPopupPage(1)">→</button>
-      </div>
-    `;
+  <div class="popup-pagination">
+    <button class="prev-page" onclick="switchPopupPage(-1)">←</button>
+    <span class="page-indicator"><span id="currentPage">Tabelle</span></span>
+    <button class="next-page" onclick="switchPopupPage(1)">→</button>
+  </div>
+`;
 
     return page1Content + page2Content + paginationControls;
 }
@@ -314,7 +314,7 @@ function switchPopupPage(direction) {
     if (direction === 1) {
         page1.style.display = "none";
         page2.style.display = "block";
-        pageIndicator.textContent = "2";
+        pageIndicator.textContent = "Grafik";
         buildChartsOnPage2();
         setTimeout(() => {
             if (map._popup) {
@@ -324,7 +324,7 @@ function switchPopupPage(direction) {
     } else {
         page1.style.display = "block";
         page2.style.display = "none";
-        pageIndicator.textContent = "1";
+        pageIndicator.textContent = "Tabelle";
         setTimeout(() => {
             if (map._popup) {
               map._popup._adjustPan();
