@@ -384,6 +384,13 @@ body, html {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.popup-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: rgba(114, 167, 176, 0.9);
+    z-index: 2;
+}
+
 .popup-charts-container {
     flex: 1 1 auto;
     display: flex;
