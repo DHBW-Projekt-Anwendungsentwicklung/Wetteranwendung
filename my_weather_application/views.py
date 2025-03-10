@@ -11,10 +11,8 @@ import csv
 from collections import defaultdict
 from django.core.cache import cache
 
-
 def my_weather_application(request):
     return render(request, 'frontend.html')
-
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371.0
@@ -25,7 +23,6 @@ def haversine(lat1, lon1, lat2, lon2):
          math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
-
 
 def stations_in_radius_view(request):
     try:
@@ -61,8 +58,6 @@ def stations_in_radius_view(request):
         })
     return JsonResponse(response_data, safe=False)
 
-from django.core.cache import cache  # Importiere Django Caching
-
 def station_calculations_view(request):
     station_id = request.GET.get('station_id')
     if not station_id:
@@ -77,6 +72,12 @@ def station_calculations_view(request):
 
     print(f"Cache-Miss für Station {station_id}, Daten werden geladen...")
 
+    station = next((s for s in STATIONS if s["station_id"] == station_id), None)
+    if station is None:
+        return JsonResponse({"error": "Station not found"}, status=404)
+
+    station_lat = station["latitude"]
+
     try:
         year_from = int(request.GET.get('yearFrom', 1800))
         year_to = int(request.GET.get('yearTo', 2025))
@@ -86,7 +87,7 @@ def station_calculations_view(request):
 
     local_file = download_csv_if_needed(station_id)
     if local_file is None:
-    # Fall: Download schlug fehl (z.B. keine Internetverbindung, 404, Timeout etc.)
+        # Fall: Download schlug fehl (z.B. keine Internetverbindung, 404, Timeout etc.)
         return JsonResponse({
             "error": "Daten konnten nicht abgerufen werden",
             "reason": "download_failed"
@@ -94,7 +95,9 @@ def station_calculations_view(request):
 
     all_records = parse_ghcn_csv_gz(local_file)
     daily_records = [r for r in all_records if (year_from - 1) <= r["year"] <= year_to]
-    stats = calc_yearly_stats(daily_records, year_from, year_to)
+
+    # Übergib die Latitude an die calc_yearly_stats-Funktion
+    stats = calc_yearly_stats(daily_records, year_from, year_to, station_lat)
 
     if not stats:
         return JsonResponse([], safe=False)
@@ -129,7 +132,6 @@ def download_csv_if_needed(station_id):
         print(f"Fehler bei Download: {e}")
         return None
 
-
 def parse_ghcn_csv_gz(filepath):
     records = []
     with gzip.open(filepath, "rt") as f:
@@ -139,7 +141,7 @@ def parse_ghcn_csv_gz(filepath):
                 continue
             station = row[0].strip()
             date_str = row[1].strip()  # YYYYMMDD
-            element = row[2].strip()  # TMIN/TMAX
+            element = row[2].strip()   # TMIN/TMAX
             val_str = row[3].strip()
 
             if element not in ("TMIN", "TMAX"):
@@ -167,9 +169,7 @@ def parse_ghcn_csv_gz(filepath):
                 })
     return records
 
-
-def calc_yearly_stats(daily_records, year_from, year_to):
-    # Daten nach (year, month) bündeln
+def calc_yearly_stats(daily_records, year_from, year_to, latitude):
     data_by_year_month = defaultdict(lambda: {"TMIN": [], "TMAX": []})
     for r in daily_records:
         y, m = r["year"], r["month"]
@@ -183,60 +183,64 @@ def calc_yearly_stats(daily_records, year_from, year_to):
 
     results = []
 
+    def build_temp_text(min_vals, max_vals, missing=False):
+        if missing:
+            return "Keine Daten"
+        if min_vals and max_vals:
+            return (f"min: {sum(min_vals) / len(min_vals):.1f}°C"
+                    f"<br>max: {sum(max_vals) / len(max_vals):.1f}°C")
+        else:
+            return "Keine Daten"
+
+    def gather_avg_for_pairs(pairs):
+        tmp_min = []
+        tmp_max = []
+        missing = all((yy, mm) not in data_by_year_month for yy, mm in pairs)
+
+        for (yy, mm) in pairs:
+            tmp_min.extend(data_by_year_month[(yy, mm)]["TMIN"])
+            tmp_max.extend(data_by_year_month[(yy, mm)]["TMAX"])
+        return build_temp_text(tmp_min, tmp_max, missing)
+
     for year in range(first_available_year, year_to + 1):
+        # Alle TMIN/TMAX-Werte für dieses Jahr sammeln
         tmin_list = []
         tmax_list = []
-        missing_months = []
-
         for m in range(1, 13):
             if (year, m) in data_by_year_month:
                 tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
                 tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
-            else:
-                missing_months.append(m)
 
-        if tmin_list:
-            yearly_min_mean = round(sum(tmin_list) / len(tmin_list), 1)
+        # Jahresmittel für TMIN / TMAX
+        def average_or_none(values):
+            return round(sum(values) / len(values), 1) if values else None
+
+        yearly_min_mean = average_or_none(tmin_list)
+        yearly_max_mean = average_or_none(tmax_list)
+
+        if latitude < 0:
+            # Südhalbkugel
+            summer_pairs = [(year - 1, 12), (year, 1), (year, 2)]
+            autumn_pairs = [(year, 3), (year, 4), (year, 5)]
+            winter_pairs = [(year, 6), (year, 7), (year, 8)]
+            spring_pairs = [(year, 9), (year, 10), (year, 11)]
         else:
-            yearly_min_mean = None
-
-        if tmax_list:
-            yearly_max_mean = round(sum(tmax_list) / len(tmax_list), 1)
-        else:
-            yearly_max_mean = None
-
-        def build_temp_text(min_vals, max_vals, missing=False):
-            if missing:
-                return "Keine Daten"
-            if min_vals and max_vals:
-                return (f"min: {sum(min_vals) / len(min_vals):.1f}°C"
-                        f"<br>max: {sum(max_vals) / len(max_vals):.1f}°C")
-            else:
-                return "Keine Daten"
-
-        def gather_avg_for_pairs(pairs):
-            tmp_min = []
-            tmp_max = []
-            missing = all((yy, mm) not in data_by_year_month for yy, mm in pairs)
-
-            for (yy, mm) in pairs:
-                tmp_min.extend(data_by_year_month[(yy, mm)]["TMIN"])
-                tmp_max.extend(data_by_year_month[(yy, mm)]["TMAX"])
-            return build_temp_text(tmp_min, tmp_max, missing)
-
-        winter_pairs = [(year - 1, 12), (year, 1), (year, 2)]
-        spring_pairs = [(year, 3), (year, 4), (year, 5)]
-        summer_pairs = [(year, 6), (year, 7), (year, 8)]
-        autumn_pairs = [(year, 9), (year, 10), (year, 11)]
+            # Nordhalbkugel
+            winter_pairs = [(year - 1, 12), (year, 1), (year, 2)]
+            spring_pairs = [(year, 3), (year, 4), (year, 5)]
+            summer_pairs = [(year, 6), (year, 7), (year, 8)]
+            autumn_pairs = [(year, 9), (year, 10), (year, 11)]
 
         winter_str = gather_avg_for_pairs(winter_pairs)
         spring_str = gather_avg_for_pairs(spring_pairs)
         summer_str = gather_avg_for_pairs(summer_pairs)
         autumn_str = gather_avg_for_pairs(autumn_pairs)
 
-        yearly_str = build_temp_text(
-            tmin_list, tmax_list, missing=(len(tmin_list) == 0 and len(tmax_list) == 0)
-        )
+        if not tmin_list and not tmax_list:
+            yearly_str = "Keine Daten"
+        else:
+            yearly_str = (f"min: {yearly_min_mean}°C<br>"
+                          f"max: {yearly_max_mean}°C")
 
         results.append({
             "year": year,
