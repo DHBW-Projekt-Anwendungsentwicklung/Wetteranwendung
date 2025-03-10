@@ -349,7 +349,6 @@ function buildChartsOnPage2() {
     }
 
     let years = [];
-
     let yearlyMinValues = [];
     let yearlyMaxValues = [];
     let springMinValues = [];
@@ -409,21 +408,51 @@ function buildChartsOnPage2() {
                     data: yearlyMinValues,
                     borderColor: 'brown',
                     backgroundColor: 'brown',
-                    spanGaps: true
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'brown' : 'rgba(0,0,0,0)';
+                        }
+                    }
                 },
                 {
                     label: 'Jährlicher Mittelwert Max',
                     data: yearlyMaxValues,
                     borderColor: 'blue',
                     backgroundColor: 'blue',
-                    spanGaps: true
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'blue' : 'rgba(0,0,0,0)';
+                        }
+                    }
                 },
                 {
                     label: 'Frühling Min',
                     data: springMinValues,
                     borderColor: 'green',
                     backgroundColor: 'green',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'green' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -431,7 +460,17 @@ function buildChartsOnPage2() {
                     data: springMaxValues,
                     borderColor: 'lightgreen',
                     backgroundColor: 'lightgreen',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'lightgreen' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -439,7 +478,17 @@ function buildChartsOnPage2() {
                     data: summerMinValues,
                     borderColor: 'darkorange',
                     backgroundColor: 'darkorange',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'darkorange' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -447,7 +496,17 @@ function buildChartsOnPage2() {
                     data: summerMaxValues,
                     borderColor: '#FFD700',
                     backgroundColor: '#FFD700',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? '#FFD700' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -455,7 +514,17 @@ function buildChartsOnPage2() {
                     data: autumnMinValues,
                     borderColor: 'tan',
                     backgroundColor: 'tan',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'tan' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -463,7 +532,17 @@ function buildChartsOnPage2() {
                     data: autumnMaxValues,
                     borderColor: 'saddlebrown',
                     backgroundColor: 'saddlebrown',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'saddlebrown' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -471,7 +550,17 @@ function buildChartsOnPage2() {
                     data: winterMinValues,
                     borderColor: 'gray',
                     backgroundColor: 'gray',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'gray' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
                 },
                 {
@@ -479,9 +568,19 @@ function buildChartsOnPage2() {
                     data: winterMaxValues,
                     borderColor: 'lightgray',
                     backgroundColor: 'lightgray',
-                    spanGaps: true,
+                    spanGaps: false,
+                    segment: {
+                        borderColor: ctx => {
+                            if (!ctx.p0.parsed || !ctx.p1.parsed) {
+                                return 'rgba(0,0,0,0)';
+                            }
+                            const x0 = Number(ctx.p0.parsed.x);
+                            const x1 = Number(ctx.p1.parsed.x);
+                            return (x1 - x0 === 1) ? 'lightgray' : 'rgba(0,0,0,0)';
+                        }
+                    },
                     hidden: true
-                },
+                }
             ]
         },
         options: {
