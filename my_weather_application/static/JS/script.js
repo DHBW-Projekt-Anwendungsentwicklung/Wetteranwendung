@@ -116,7 +116,8 @@ function findStationsInRadius() {
                 var marker = L.marker([station.latitude, station.longitude], {
                     icon: blueIcon,
                     stationId: station.station_id,
-                    stationName: station.name || "Unbekannt"
+                    stationName: station.name || "Unbekannt",
+                    stationDistance: station.distance_km
                 }).addTo(map)
                 .bindTooltip(
                     `Station ${index + 1}: ${station.name || "No Name"}`,
@@ -166,6 +167,7 @@ function displayStationsInSidebar(data) {
             <p><b>ID:</b> ${station.station_id}</p>
             <p><b>Breitengrad:</b> ${station.latitude}</p>
             <p><b>Längengrad:</b> ${station.longitude}</p>
+            <p><b>Entfernung:</b> ${station.distance_km} km</p>
         `;
 
         item.addEventListener('click', () => {
@@ -405,8 +407,8 @@ function buildChartsOnPage2() {
                 {
                     label: 'Jährlicher Mittelwert Min',
                     data: yearlyMinValues,
-                    borderColor: 'Turquoise',
-                    backgroundColor: 'Turquoise',
+                    borderColor: 'brown',
+                    backgroundColor: 'brown',
                     spanGaps: true
                 },
                 {
@@ -419,58 +421,66 @@ function buildChartsOnPage2() {
                 {
                     label: 'Frühling Min',
                     data: springMinValues,
-                    borderColor: 'lightgreen',
-                    backgroundColor: 'lightgreen',
-                    spanGaps: true
+                    borderColor: 'green',
+                    backgroundColor: 'green',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Frühling Max',
                     data: springMaxValues,
-                    borderColor: 'green',
-                    backgroundColor: 'green',
-                    spanGaps: true
+                    borderColor: 'lightgreen',
+                    backgroundColor: 'lightgreen',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Sommer Min',
                     data: summerMinValues,
-                    borderColor: '#FFD700',
-                    backgroundColor: '#FFD700',
-                    spanGaps: true
+                    borderColor: 'darkorange',
+                    backgroundColor: 'darkorange',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Sommer Max',
                     data: summerMaxValues,
-                    borderColor: 'darkorange',
-                    backgroundColor: 'darkorange',
-                    spanGaps: true
+                    borderColor: '#FFD700',
+                    backgroundColor: '#FFD700',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Herbst Min',
                     data: autumnMinValues,
-                    borderColor: 'saddlebrown',
-                    backgroundColor: 'saddlebrown',
-                    spanGaps: true
+                    borderColor: 'tan',
+                    backgroundColor: 'tan',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Herbst Max',
                     data: autumnMaxValues,
-                    borderColor: 'brown',
-                    backgroundColor: 'brown',
-                    spanGaps: true
+                    borderColor: 'saddlebrown',
+                    backgroundColor: 'saddlebrown',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Winter Min',
                     data: winterMinValues,
-                    borderColor: 'lightgray',
-                    backgroundColor: 'lightgray',
-                    spanGaps: true
+                    borderColor: 'gray',
+                    backgroundColor: 'gray',
+                    spanGaps: true,
+                    hidden: true
                 },
                 {
                     label: 'Winter Max',
                     data: winterMaxValues,
-                    borderColor: 'gray',
-                    backgroundColor: 'gray',
-                    spanGaps: true
+                    borderColor: 'lightgray',
+                    backgroundColor: 'lightgray',
+                    spanGaps: true,
+                    hidden: true
                 },
             ]
         },
