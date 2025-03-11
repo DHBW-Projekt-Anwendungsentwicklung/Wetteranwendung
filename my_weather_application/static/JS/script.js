@@ -64,6 +64,7 @@ map.on('click', function (e) {
 });
 
 function findStationsInRadius() {
+    // ... (bestehender Code zum Einlesen von lat, lon, radius, maxStations)
     const floatRegex = /^-?\d+(\.\d+)?$/;
     const intRegex = /^-?\d+$/;
 
@@ -80,23 +81,28 @@ function findStationsInRadius() {
         alert("Bitte gültige Werte für Breitengrad, Längengrad und Anzahl eingeben!");
         return;
     }
-
+    
     let lat = parseFloat(latStr);
     let lon = parseFloat(lonStr);
     let radius = parseFloat(radiusStr);
     let maxStations = parseInt(maxStationsStr, 10);
 
+    // Neue Parameter: yearFrom und yearTo aus den Inputfeldern
+    let yearFrom = document.getElementById('yearFrom').value;
+    let yearTo = document.getElementById('yearTo').value;
+
+    // Bereinige vorher eventuell vorhandene Marker und Pings
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
-    currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
-
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
     }
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
+
+    currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
 
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
@@ -107,7 +113,8 @@ function findStationsInRadius() {
 
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
-    fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
+    // API-Call inkl. yearFrom und yearTo
+    fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
         .then(response => response.json())
         .then(data => {
             console.log("Gefundene Stationen:", data);
@@ -142,6 +149,7 @@ function findStationsInRadius() {
             console.error("Fehler beim Abrufen der Stationsdaten:", error);
         });
 }
+
 
 function displayStationsInSidebar(data) {
     var oldList = document.getElementById("stationList");
@@ -204,14 +212,6 @@ function loadStationCalculations(stationId) {
                 }
                 return;
             }
-            //if (data.reason === "download_failed") {
-            //    alert("Daten können nicht abgerufen werden."); 
-            //    return;
-            //}
-            if (!Array.isArray(data) || !data.length) {
-                alert("Keine Daten für diese Station.");
-                return;
-            }
 
             let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
             let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
@@ -255,13 +255,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
             `;
         }
     });
-
-    if (!tableRows) {
-        return `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
-                <div class="popup-table-container">
-                    <p>Keine Daten für diese Station vorhanden.</p>
-                </div>`;
-    }
 
     let page1Content = `
   <div class="popup-header">
@@ -416,7 +409,7 @@ function buildChartsOnPage2() {
                             }
                             const x0 = Number(ctx.p0.parsed.x);
                             const x1 = Number(ctx.p1.parsed.x);
-                            return (x1 - x0 === 1) ? 'brown' : 'rgba(0,0,0,0)';
+                            return (x1 - x0 === 1) ? 'red' : 'rgba(0,0,0,0)';
                         }
                     }
                 },
@@ -522,7 +515,7 @@ function buildChartsOnPage2() {
                             }
                             const x0 = Number(ctx.p0.parsed.x);
                             const x1 = Number(ctx.p1.parsed.x);
-                            return (x1 - x0 === 1) ? 'tan' : 'rgba(0,0,0,0)';
+                            return (x1 - x0 === 1) ? 'saddlebrown' : 'rgba(0,0,0,0)';
                         }
                     },
                     hidden: true
@@ -540,7 +533,7 @@ function buildChartsOnPage2() {
                             }
                             const x0 = Number(ctx.p0.parsed.x);
                             const x1 = Number(ctx.p1.parsed.x);
-                            return (x1 - x0 === 1) ? 'saddlebrown' : 'rgba(0,0,0,0)';
+                            return (x1 - x0 === 1) ? 'tan' : 'rgba(0,0,0,0)';
                         }
                     },
                     hidden: true
