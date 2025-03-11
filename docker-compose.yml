@@ -1,6 +1,4 @@
-name: wetteranwendung_dhbw
- 
- services:
+services:
    web:
      build: .
      container_name: wetteranwendung
