@@ -1,9 +1,9 @@
-name: wetteranwendung_dhbw
+name: wetteranwendungdhbw
 
 services:
   web:
     build:
-     context: https://github.com/DHBW-Projekt-Anwendungsentwicklung/Wetteranwendung.git
+     context: https://github.com/dhbw-projekt-anwendungsentwicklung/wetteranwendung.git
      dockerfile: Dockerfile
     container_name: wetteranwendung
     ports:
