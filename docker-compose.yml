@@ -2,14 +2,14 @@ name: wetteranwendung_dhbw
 
 services:
   web:
-    build: .
+    build:
+     context: https://github.com/DHBW-Projekt-Anwendungsentwicklung/Wetteranwendung.git
+     dockerfile: Dockerfile
     container_name: wetteranwendung
     ports:
       - "127.0.0.1:8000:8000"
     env_file:
       - .env
-    volumes:
-      - .:/app
     restart: always
     command: gunicorn -w 4 -b 0.0.0.0:8000 weather_application.wsgi:application
     deploy:
