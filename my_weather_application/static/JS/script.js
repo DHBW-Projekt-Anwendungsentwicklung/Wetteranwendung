@@ -406,8 +406,8 @@ function buildChartsOnPage2() {
                 {
                     label: 'Jährlicher Mittelwert Min',
                     data: yearlyMinValues,
-                    borderColor: 'brown',
-                    backgroundColor: 'brown',
+                    borderColor: 'red',
+                    backgroundColor: 'red',
                     spanGaps: false,
                     segment: {
                         borderColor: ctx => {
@@ -512,8 +512,8 @@ function buildChartsOnPage2() {
                 {
                     label: 'Herbst Min',
                     data: autumnMinValues,
-                    borderColor: 'tan',
-                    backgroundColor: 'tan',
+                    borderColor: 'saddlebrown',
+                    backgroundColor: 'saddlebrown',
                     spanGaps: false,
                     segment: {
                         borderColor: ctx => {
@@ -530,8 +530,8 @@ function buildChartsOnPage2() {
                 {
                     label: 'Herbst Max',
                     data: autumnMaxValues,
-                    borderColor: 'saddlebrown',
-                    backgroundColor: 'saddlebrown',
+                    borderColor: 'tan',
+                    backgroundColor: 'tan',
                     spanGaps: false,
                     segment: {
                         borderColor: ctx => {
