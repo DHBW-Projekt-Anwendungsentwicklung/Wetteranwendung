@@ -63,6 +63,14 @@ map.on('click', function (e) {
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
+function showLoadingAnimation() {
+    document.getElementById('loadingAnimation').style.display = 'block';
+}
+
+function hideLoadingAnimation() {
+    document.getElementById('loadingAnimation').style.display = 'none';
+}
+
 function findStationsInRadius() {
     const floatRegex = /^-?\d+(\.\d+)?$/;
     const intRegex = /^-?\d+$/;
@@ -86,17 +94,24 @@ function findStationsInRadius() {
     let radius = parseFloat(radiusStr);
     let maxStations = parseInt(maxStationsStr, 10);
 
+    // Vorherige Marker und Kreise entfernen
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
-    currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
-
     if (radiusCircle !== null) {
         map.removeLayer(radiusCircle);
         radiusCircle = null;
     }
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
+
+    // Lösche alte Ergebnisliste in der Sidebar
+    var oldList = document.getElementById("stationList");
+    if (oldList) {
+        oldList.remove();
+    }
+
+    currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
 
     radiusCircle = L.circle([lat, lon], {
         color: 'rgba(22, 84, 255, 1)',
@@ -107,9 +122,21 @@ function findStationsInRadius() {
 
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
-    fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}`)
+    showLoadingAnimation();
+
+    // Lese zusätzlich die Jahre aus und hänge sie an den API-Call an
+    let yearFrom = document.getElementById('yearFrom').value;
+    let yearTo = document.getElementById('yearTo').value;
+
+    fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
         .then(response => response.json())
         .then(data => {
+            // Überprüfe, ob der Server einen Fehler zurückgibt
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
             console.log("Gefundene Stationen:", data);
 
             data.forEach((station, index) => {
@@ -140,6 +167,11 @@ function findStationsInRadius() {
         })
         .catch(error => {
             console.error("Fehler beim Abrufen der Stationsdaten:", error);
+            alert("Keine Verbindung zum Wetterdatenserver.");
+        })
+        .finally(() => {
+            // Ladeanimation ausblenden, sobald der API-Call abgeschlossen ist
+            hideLoadingAnimation();
         });
 }
 
@@ -204,14 +236,6 @@ function loadStationCalculations(stationId) {
                 }
                 return;
             }
-            //if (data.reason === "download_failed") {
-            //    alert("Daten können nicht abgerufen werden."); 
-            //    return;
-            //}
-            if (!Array.isArray(data) || !data.length) {
-                alert("Keine Daten für diese Station.");
-                return;
-            }
 
             let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
             let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
@@ -255,13 +279,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
             `;
         }
     });
-
-    if (!tableRows) {
-        return `<div class="popup-header">Wetterstation: ${stationName || 'Unbekannt'} (ID: ${stationId})</div>
-                <div class="popup-table-container">
-                    <p>Keine Daten für diese Station vorhanden.</p>
-                </div>`;
-    }
 
     let page1Content = `
   <div class="popup-header">
@@ -416,7 +433,7 @@ function buildChartsOnPage2() {
                             }
                             const x0 = Number(ctx.p0.parsed.x);
                             const x1 = Number(ctx.p1.parsed.x);
-                            return (x1 - x0 === 1) ? 'brown' : 'rgba(0,0,0,0)';
+                            return (x1 - x0 === 1) ? 'red' : 'rgba(0,0,0,0)';
                         }
                     }
                 },
@@ -522,7 +539,7 @@ function buildChartsOnPage2() {
                             }
                             const x0 = Number(ctx.p0.parsed.x);
                             const x1 = Number(ctx.p1.parsed.x);
-                            return (x1 - x0 === 1) ? 'tan' : 'rgba(0,0,0,0)';
+                            return (x1 - x0 === 1) ? 'saddlebrown' : 'rgba(0,0,0,0)';
                         }
                     },
                     hidden: true
@@ -540,7 +557,7 @@ function buildChartsOnPage2() {
                             }
                             const x0 = Number(ctx.p0.parsed.x);
                             const x1 = Number(ctx.p1.parsed.x);
-                            return (x1 - x0 === 1) ? 'saddlebrown' : 'rgba(0,0,0,0)';
+                            return (x1 - x0 === 1) ? 'tan' : 'rgba(0,0,0,0)';
                         }
                     },
                     hidden: true

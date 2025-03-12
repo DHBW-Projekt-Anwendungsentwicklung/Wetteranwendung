@@ -30,24 +30,48 @@ def stations_in_radius_view(request):
         lon = float(request.GET.get('longitude', 0))
         radius_km = float(request.GET.get('radius', 10))
         max_stations = int(request.GET.get('max_stations', 10))
+        year_from = int(request.GET.get('yearFrom', 1800))
+        year_to = int(request.GET.get('yearTo', 2025))
     except ValueError:
         return JsonResponse({"error": "Ungültige Parameter."}, status=400)
 
-    # Stationen filtern
-    nearest_stations = []
+    def has_valid_data_for_year(station_id, year):
+        local_file = download_csv_if_needed(station_id)
+        if local_file is None:
+            return False
+        records = parse_ghcn_csv_gz(local_file)
+        return any(r for r in records if r["year"] == year and r["element"] in ("TMIN", "TMAX"))
+
+    # Zunächst alle Stationen innerhalb des Radius sammeln und nach Entfernung sortieren
+    candidate_stations = []
     for station in STATIONS:
         distance = haversine(lat, lon, station["latitude"], station["longitude"])
         if distance <= radius_km:
-            nearest_stations.append({
+            candidate_stations.append({
                 "station": station,
                 "distance": distance
             })
 
-    # sortieren + begrenzen
-    nearest_stations = sorted(nearest_stations, key=lambda x: x["distance"])[:max_stations]
+    candidate_stations = sorted(candidate_stations, key=lambda x: x["distance"])
+
+    # Nun die sortierte Liste durchgehen und nur die Stationen mit gültigen Daten auswählen
+    valid_stations = []
+    try:
+        for candidate in candidate_stations:
+            station = candidate["station"]
+            if (has_valid_data_for_year(station["station_id"], year_from) and
+                has_valid_data_for_year(station["station_id"], year_to)):
+                valid_stations.append(candidate)
+                if len(valid_stations) >= max_stations:
+                    break
+    except ConnectionError:
+        return JsonResponse({"error": "Keine Verbindung zum Wetterdatenserver."}, status=400)
+
+    if not valid_stations:
+        return JsonResponse({"error": "Keine Station im angegebenen Radius vorhanden."}, status=400)
 
     response_data = []
-    for item in nearest_stations:
+    for item in valid_stations:
         st = item["station"]
         response_data.append({
             "station_id": st["station_id"],
@@ -57,6 +81,8 @@ def stations_in_radius_view(request):
             "distance_km": round(item["distance"], 2)
         })
     return JsonResponse(response_data, safe=False)
+
+
 
 def station_calculations_view(request):
     station_id = request.GET.get('station_id')
@@ -86,17 +112,10 @@ def station_calculations_view(request):
         year_to = 2025
 
     local_file = download_csv_if_needed(station_id)
-    if local_file is None:
-        # Fall: Download schlug fehl (z.B. keine Internetverbindung, 404, Timeout etc.)
-        return JsonResponse({
-            "error": "Daten konnten nicht abgerufen werden",
-            "reason": "download_failed"
-        }, status=400)
 
     all_records = parse_ghcn_csv_gz(local_file)
     daily_records = [r for r in all_records if (year_from - 1) <= r["year"] <= year_to]
 
-    # Übergib die Latitude an die calc_yearly_stats-Funktion
     stats = calc_yearly_stats(daily_records, year_from, year_to, station_lat)
 
     if not stats:
@@ -128,9 +147,9 @@ def download_csv_if_needed(station_id):
         else:
             print(f"Keine Daten: HTTP {resp.status_code}, length={len(resp.content)}")
             return None
-    except Exception as e:
-        print(f"Fehler bei Download: {e}")
-        return None
+    except requests.exceptions.ConnectionError:
+        print("Fehler: Keine Verbindung zum Wetterdatenserver.")
+        raise ConnectionError("Keine Verbindung zum Wetterdatenserver.")
 
 def parse_ghcn_csv_gz(filepath):
     records = []
