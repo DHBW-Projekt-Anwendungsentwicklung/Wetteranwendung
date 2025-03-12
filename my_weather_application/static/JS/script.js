@@ -105,6 +105,12 @@ function findStationsInRadius() {
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
+    // Lösche alte Ergebnisliste in der Sidebar
+    var oldList = document.getElementById("stationList");
+    if (oldList) {
+        oldList.remove();
+    }
+
     currentPing = L.marker([lat, lon], { icon: customIcon }).addTo(map);
 
     radiusCircle = L.circle([lat, lon], {
