@@ -21,57 +21,38 @@ Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
 
 ---
 
-## 2. Projekt klonen
-Öffne PowerShell oder die Eingabeaufforderung (CMD) und klone das GitHub-Repository:
+### 2. Container-Image abrufen
+Da das Image bereits im GitHub Container Registry veröffentlicht ist, müssen Sie das Repository nicht lokal klonen. Laden Sie das aktuelle Image mit:
 
 ```sh
-git clone https://github.com/DHBW-Projekt-Anwendungsentwicklung/Wetteranwendung.git
-cd wetteranwendung
+docker pull ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
 ```
 
-Falls du einen bestimmten Branch benötigst:
+### 4. Docker-Container starten
+Navigieren Sie in das Verzeichnis, in dem sich die docker-compose.yml befindet (dies ist im geklonten Repository oder in einem heruntergeladenen Ordner mit dem Projektinhalt). Führen Sie anschließend folgende Befehle aus:
+
 ```sh
-git checkout branch-name
-```
-
----
-
-## 3. `.env` Datei einrichten
-Erstelle eine `.env` Datei basierend auf `.env.example`:
-```sh
-copy .env.example .env
-```
-
-Bearbeite die `.env` Datei mit einem Texteditor (z. B. Notepad oder VS Code) und passe die Werte an.
-
----
-
-## 4. Docker-Container starten
-Führe folgenden Befehl aus, um das Projekt mit Docker Compose zu starten:
-```sh
-docker-compose up --build
-```
-Falls du den Container im Hintergrund laufen lassen möchtest:
-```sh
+docker-compose build
 docker-compose up -d
 ```
 
----
+Der erste Befehl baut den Container (dadurch werden alle Änderungen, z. B. an der Konfiguration, übernommen), und der zweite Befehl startet den Container im Hintergrund.
 
-## 5. Anwendung im Browser öffnen
-Sobald Docker läuft, kannst du die Anwendung unter folgender URL aufrufen:
+### 5. Anwendung im Browser öffnen
+Sobald Docker läuft, können Sie die Anwendung unter folgender URL aufrufen:
 
+```sh
 http://127.0.0.1:8000/
+```
 
-## 6. Container stoppen und neustarten
-Falls du den Container stoppen möchtest:
+### 6. Container stoppen und neustarten
+Falls Sie den Container stoppen möchten:
+
 ```sh
 docker-compose down
 ```
+Falls Sie Änderungen am Code oder an der Konfiguration vornehmen, starten Sie den Container neu:
 
-Falls du Änderungen am Code machst, starte den Container neu:
 ```sh
 docker-compose up --build
 ```
-
----
