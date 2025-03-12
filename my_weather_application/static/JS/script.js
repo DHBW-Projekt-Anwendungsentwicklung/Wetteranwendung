@@ -252,6 +252,11 @@ function loadStationCalculations(stationId) {
                     autoPanPaddingTopLeft: [50, 50],
                     autoPanPaddingBottomRight: [50, 50]
                 }).openPopup();
+                setTimeout(() => {
+                    if (map._popup) {
+                        map._popup._adjustPan();
+                    }
+                }, 0);
             } else {
                 alert("Fehler: Kein Marker für diese Station gefunden.");
             }
