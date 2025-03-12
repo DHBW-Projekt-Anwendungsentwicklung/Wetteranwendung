@@ -32,8 +32,7 @@ docker pull ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
 Navigieren Sie in das Verzeichnis, in dem sich die docker-compose.yml befindet (dies ist im geklonten Repository oder in einem heruntergeladenen Ordner mit dem Projektinhalt). Führen Sie anschließend folgende Befehle aus:
 
 ```sh
-docker-compose build
-docker-compose up -d
+docker run -d -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
 ```
 
 Der erste Befehl baut den Container (dadurch werden alle Änderungen, z. B. an der Konfiguration, übernommen), und der zweite Befehl startet den Container im Hintergrund.
