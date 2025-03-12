@@ -35,7 +35,6 @@ def stations_in_radius_view(request):
     except ValueError:
         return JsonResponse({"error": "Ungültige Parameter."}, status=400)
 
-    # Helper-Funktion, um zu prüfen, ob es in den CSV-Daten einen gültigen Datensatz für ein bestimmtes Jahr gibt.
     def has_valid_data_for_year(station_id, year):
         local_file = download_csv_if_needed(station_id)
         if local_file is None:
@@ -43,26 +42,33 @@ def stations_in_radius_view(request):
         records = parse_ghcn_csv_gz(local_file)
         return any(r for r in records if r["year"] == year and r["element"] in ("TMIN", "TMAX"))
 
+    # Zunächst alle Stationen innerhalb des Radius sammeln und nach Entfernung sortieren
+    candidate_stations = []
+    for station in STATIONS:
+        distance = haversine(lat, lon, station["latitude"], station["longitude"])
+        if distance <= radius_km:
+            candidate_stations.append({
+                "station": station,
+                "distance": distance
+            })
+
+    candidate_stations = sorted(candidate_stations, key=lambda x: x["distance"])
+
+    # Nun die sortierte Liste durchgehen und nur die Stationen mit gültigen Daten auswählen
     valid_stations = []
     try:
-        for station in STATIONS:
-            distance = haversine(lat, lon, station["latitude"], station["longitude"])
-            if distance <= radius_km:
-                if (has_valid_data_for_year(station["station_id"], year_from) and
-                    has_valid_data_for_year(station["station_id"], year_to)):
-                    valid_stations.append({
-                        "station": station,
-                        "distance": distance
-                    })
-                    if len(valid_stations) >= max_stations:
-                        break
+        for candidate in candidate_stations:
+            station = candidate["station"]
+            if (has_valid_data_for_year(station["station_id"], year_from) and
+                has_valid_data_for_year(station["station_id"], year_to)):
+                valid_stations.append(candidate)
+                if len(valid_stations) >= max_stations:
+                    break
     except ConnectionError:
         return JsonResponse({"error": "Keine Verbindung zum Wetterdatenserver."}, status=400)
 
     if not valid_stations:
         return JsonResponse({"error": "Keine Station im angegebenen Radius vorhanden."}, status=400)
-
-    valid_stations = sorted(valid_stations, key=lambda x: x["distance"])
 
     response_data = []
     for item in valid_stations:
@@ -75,6 +81,7 @@ def stations_in_radius_view(request):
             "distance_km": round(item["distance"], 2)
         })
     return JsonResponse(response_data, safe=False)
+
 
 
 def station_calculations_view(request):
