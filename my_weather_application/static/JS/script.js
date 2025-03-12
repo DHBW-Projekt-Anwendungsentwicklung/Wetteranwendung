@@ -63,6 +63,14 @@ map.on('click', function (e) {
     document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
 });
 
+function showLoadingAnimation() {
+    document.getElementById('loadingAnimation').style.display = 'block';
+}
+
+function hideLoadingAnimation() {
+    document.getElementById('loadingAnimation').style.display = 'none';
+}
+
 function findStationsInRadius() {
     const floatRegex = /^-?\d+(\.\d+)?$/;
     const intRegex = /^-?\d+$/;
@@ -108,6 +116,8 @@ function findStationsInRadius() {
 
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
+    showLoadingAnimation();
+
     // Lese zusätzlich die Jahre aus und hänge sie an den API-Call an
     let yearFrom = document.getElementById('yearFrom').value;
     let yearTo = document.getElementById('yearTo').value;
@@ -152,6 +162,10 @@ function findStationsInRadius() {
         .catch(error => {
             console.error("Fehler beim Abrufen der Stationsdaten:", error);
             alert("Keine Verbindung zum Wetterdatenserver.");
+        })
+        .finally(() => {
+            // Ladeanimation ausblenden, sobald der API-Call abgeschlossen ist
+            hideLoadingAnimation();
         });
 }
 
