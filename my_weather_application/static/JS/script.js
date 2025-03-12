@@ -64,7 +64,6 @@ map.on('click', function (e) {
 });
 
 function findStationsInRadius() {
-    // ... (bestehender Code zum Einlesen von lat, lon, radius, maxStations)
     const floatRegex = /^-?\d+(\.\d+)?$/;
     const intRegex = /^-?\d+$/;
 
@@ -81,17 +80,13 @@ function findStationsInRadius() {
         alert("Bitte gültige Werte für Breitengrad, Längengrad und Anzahl eingeben!");
         return;
     }
-    
+
     let lat = parseFloat(latStr);
     let lon = parseFloat(lonStr);
     let radius = parseFloat(radiusStr);
     let maxStations = parseInt(maxStationsStr, 10);
 
-    // Neue Parameter: yearFrom und yearTo aus den Inputfeldern
-    let yearFrom = document.getElementById('yearFrom').value;
-    let yearTo = document.getElementById('yearTo').value;
-
-    // Bereinige vorher eventuell vorhandene Marker und Pings
+    // Vorherige Marker und Kreise entfernen
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
@@ -113,10 +108,19 @@ function findStationsInRadius() {
 
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 
-    // API-Call inkl. yearFrom und yearTo
+    // Lese zusätzlich die Jahre aus und hänge sie an den API-Call an
+    let yearFrom = document.getElementById('yearFrom').value;
+    let yearTo = document.getElementById('yearTo').value;
+
     fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
         .then(response => response.json())
         .then(data => {
+            // Überprüfe, ob der Server einen Fehler zurückgibt
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
             console.log("Gefundene Stationen:", data);
 
             data.forEach((station, index) => {
@@ -147,9 +151,9 @@ function findStationsInRadius() {
         })
         .catch(error => {
             console.error("Fehler beim Abrufen der Stationsdaten:", error);
+            alert("Keine Verbindung zum Wetterdatenserver.");
         });
 }
-
 
 function displayStationsInSidebar(data) {
     var oldList = document.getElementById("stationList");

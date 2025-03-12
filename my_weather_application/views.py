@@ -44,19 +44,23 @@ def stations_in_radius_view(request):
         return any(r for r in records if r["year"] == year and r["element"] in ("TMIN", "TMAX"))
 
     valid_stations = []
-    for station in STATIONS:
-        distance = haversine(lat, lon, station["latitude"], station["longitude"])
-        if distance <= radius_km:
-            # Prüfen, ob für beide Jahre Wetterdaten vorhanden sind
-            if (has_valid_data_for_year(station["station_id"], year_from) and
-                has_valid_data_for_year(station["station_id"], year_to)):
-                valid_stations.append({
-                    "station": station,
-                    "distance": distance
-                })
-                # Falls wir schon genügend Stationen haben, können wir abbrechen.
-                if len(valid_stations) >= max_stations:
-                    break
+    try:
+        for station in STATIONS:
+            distance = haversine(lat, lon, station["latitude"], station["longitude"])
+            if distance <= radius_km:
+                if (has_valid_data_for_year(station["station_id"], year_from) and
+                    has_valid_data_for_year(station["station_id"], year_to)):
+                    valid_stations.append({
+                        "station": station,
+                        "distance": distance
+                    })
+                    if len(valid_stations) >= max_stations:
+                        break
+    except ConnectionError:
+        return JsonResponse({"error": "Keine Verbindung zum Wetterdatenserver."}, status=400)
+
+    if not valid_stations:
+        return JsonResponse({"error": "Keine Station im angegebenen Radius vorhanden."}, status=400)
 
     valid_stations = sorted(valid_stations, key=lambda x: x["distance"])
 
@@ -136,9 +140,9 @@ def download_csv_if_needed(station_id):
         else:
             print(f"Keine Daten: HTTP {resp.status_code}, length={len(resp.content)}")
             return None
-    except Exception as e:
-        print(f"Fehler bei Download: {e}")
-        return None
+    except requests.exceptions.ConnectionError:
+        print("Fehler: Keine Verbindung zum Wetterdatenserver.")
+        raise ConnectionError("Keine Verbindung zum Wetterdatenserver.")
 
 def parse_ghcn_csv_gz(filepath):
     records = []
