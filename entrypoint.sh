@@ -11,5 +11,4 @@ echo "=== Tests erfolgreich, Collectstatic ausführen ==="
 python manage.py collectstatic --noinput || true
 
 echo "=== Starte Gunicorn ==="
-# gunicorn -w 4 --timeout 180 -b 0.0.0.0:8000 weather_application.wsgi:application
-gunicorn -w 4 --timeout 180 --bind 0.0.0.0:8000 --log-level debug --access-logfile - weather_application.wsgi:application
+gunicorn -w 4 --timeout 180 -b 0.0.0.0:8000 weather_application.wsgi:application
