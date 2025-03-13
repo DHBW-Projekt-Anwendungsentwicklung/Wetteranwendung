@@ -1,6 +1,6 @@
 services:
    web:
-     build: .
+     image: ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
      container_name: wetteranwendung
      ports:
        - "127.0.0.1:8000:8000"
