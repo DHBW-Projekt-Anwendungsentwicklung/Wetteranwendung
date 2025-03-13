@@ -1,6 +1,5 @@
-name: Build Docker Image and push to GHCR
+name: Test, Build & Push Docker Image to GHCR
 
-# Trigger deployment only on push to master branch
 on:
   push:
     branches:
@@ -8,26 +7,49 @@ on:
       - branch-LucaSchneider
       - branch-leon
       - branch-tim
-      - branch-Luca2
 
 jobs:
-  deploy:
-    name: Build Docker Image and push to GHCR
+  test:
+    name: Run Tests before Build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the files
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Log in to the Container registry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Django Tests
+        run: |
+          python manage.py test
+
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: https://ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.PAT_BUILD_DOCKER_IMAGE_AND_PUSH_TO_GHCR }}
-      - name: Build Docker image and push
-        id: docker_build
+
+      - name: Build & Push Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
+          tags: ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest, ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:${{ github.ref_name }}
+
