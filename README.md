@@ -21,14 +21,7 @@ Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
 
 ---
 
-### 2. Container-Image abrufen
-Da das Image bereits im GitHub Container Registry veröffentlicht ist, müssen Sie das Repository nicht lokal klonen. Laden Sie das aktuelle Image mit:
-
-```sh
-docker pull ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
-```
-
-### 3. Docker-Container starten
+### 2. Docker-Container starten
 Navigieren Sie in das Verzeichnis, in dem sich die docker-compose.yml befindet (dies ist im geklonten Repository oder in einem heruntergeladenen Ordner mit dem Projektinhalt). Führen Sie anschließend folgende Befehle aus:
 
 ```sh
@@ -37,14 +30,14 @@ docker run -d -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/
 
 Der erste Befehl baut den Container (dadurch werden alle Änderungen, z. B. an der Konfiguration, übernommen), und der zweite Befehl startet den Container im Hintergrund.
 
-### 4. Anwendung im Browser öffnen
+### 3. Anwendung im Browser öffnen
 Sobald Docker läuft, können Sie die Anwendung unter folgender URL aufrufen:
 
 ```sh
 http://127.0.0.1:8000/
 ```
 
-### 5. Container stoppen und neustarten
+### 4. Container stoppen und neustarten
 Falls Sie den Container stoppen möchten:
 
 ```sh
