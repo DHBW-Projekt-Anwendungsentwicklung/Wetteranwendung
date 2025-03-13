@@ -12,6 +12,7 @@ from collections import defaultdict
 from django.core.cache import cache
 
 def my_weather_application(request):
+    logger.info("my_weather_application wurde aufgerufen")
     return render(request, 'frontend.html')
 
 def haversine(lat1, lon1, lat2, lon2):
