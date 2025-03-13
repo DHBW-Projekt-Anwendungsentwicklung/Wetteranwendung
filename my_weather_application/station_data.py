@@ -33,6 +33,6 @@ def load_station_data():
         }
         parsed_stations.append(station_dict)
 
-    global STATIONS
-    STATIONS = parsed_stations
+    STATIONS.clear()
+    STATIONS.extend(parsed_stations)
     print(f"Fertig. {len(STATIONS)} Stationen geladen.")

@@ -1,7 +1,9 @@
 import os
 import math
+import io
 import gzip
 import csv
+import json
 from io import BytesIO, StringIO
 from unittest import mock
 
@@ -21,6 +23,12 @@ from my_weather_application.views import (
 )
 from my_weather_application.station_data import STATIONS
 
+def mock_gzip_open_text(buffer):
+        # Intern binär öffnen ...
+        gzbin = gzip.GzipFile(fileobj=buffer, mode='rb')
+        # ... und per TextIOWrapper zu Text umwandeln:
+        return io.TextIOWrapper(gzbin, encoding='utf-8')
+
 class TestHaversine(TestCase):
     """Tests für die Hilfsfunktion 'haversine'."""
     def test_haversine_same_point(self):
@@ -38,6 +46,7 @@ class TestHaversine(TestCase):
 
 class TestParseGhcnCsvGz(TestCase):
     """Tests für parse_ghcn_csv_gz, welches CSV-GZ-Dateien liest und TMIN/TMAX erfasst."""
+    
     def test_parse_valid_tmin_tmax(self):
         csv_content = """\
 STATION,20200101,TMIN,50
@@ -47,11 +56,11 @@ STATION,20200102,PRCP,5
 """
         # Wir bauen eine GZIP-Datei in Memory
         buffer = BytesIO()
-        with gzip.GzipFile(fileobj=buffer, mode='wb') as gzfile:
-            gzfile.write(csv_content.encode('utf-8'))
+        with gzip.GzipFile(fileobj=buffer, mode='wb') as gz:
+            gz.write(csv_content.encode('utf-8'))
         buffer.seek(0)
 
-        with mock.patch('gzip.open', return_value=gzip.GzipFile(fileobj=buffer)) as mock_gz:
+        with mock.patch('gzip.open', return_value=mock_gzip_open_text(buffer)):
             records = parse_ghcn_csv_gz("dummy.csv.gz")
             self.assertEqual(len(records), 3, "PRCP sollte ignoriert werden, es bleiben TMIN/TMAX.")
             self.assertEqual(records[0]["element"], "TMIN")
@@ -72,7 +81,7 @@ STATION,20200102,TMAX,100
             gzfile.write(csv_content.encode('utf-8'))
         buffer.seek(0)
 
-        with mock.patch('gzip.open', return_value=gzip.GzipFile(fileobj=buffer, mode='rt')):
+        with mock.patch('gzip.open', return_value=mock_gzip_open_text(buffer)):
             records = parse_ghcn_csv_gz("dummy.csv.gz")
             # Die erste Zeile hat 'abc' statt eines Werts → ValueError -> val=None -> ignoriert
             # Die zweite Zeile hat ein Dateiformat "2020bad" -> kein valider parse -> ignoriert
@@ -112,16 +121,18 @@ class TestCalcYearlyStats(TestCase):
 
     def test_calc_yearly_stats_southern_hemisphere(self):
         """
-        Prüft, ob der Code für latitude < 0 (Südhalbkugel) den Jahreszeiten-Shift richtig behandelt.
+        Prüft, ob der Code für latitude < 0 (Südhalbkugel) den Jahreszeiten-Shift
+        richtig behandelt, indem wir Dezember 2019 als Sommer 2020 betrachten.
         """
+        # In deiner Logik zählt Dez (year-1) zu Sommer (year).
+        # Deshalb: Wenn wir 2020 als 'year' testen, packen wir Dez 2019 hinein.
         daily_records = [
-            # Sommer auf Südhalbkugel (Dez, Jan, Feb), hier z.B. Dez 2020
-            {"year": 2020, "month": 12, "day": 15, "element": "TMIN", "value": 10},
-            {"year": 2020, "month": 12, "day": 15, "element": "TMAX", "value": 25},
+            {"year": 2019, "month": 12, "day": 15, "element": "TMIN", "value": 10},
+            {"year": 2019, "month": 12, "day": 15, "element": "TMAX", "value": 25},
         ]
         stats = calc_yearly_stats(daily_records, 2020, 2020, latitude=-33.0)
+        # Wir erwarten, dass stats[0]["summer"] die gemittelten min:/max:-Werte enthält.
         self.assertEqual(len(stats), 1)
-        # Wir prüfen, ob im Ergebnis "summer" mit unseren Werten gefüllt ist
         self.assertIn("summer", stats[0])
         self.assertIn("min:", stats[0]["summer"])
         self.assertIn("max:", stats[0]["summer"])
@@ -162,8 +173,8 @@ class TestDownloadCsvIfNeeded(TestCase):
         self.assertIsNone(path, "Wenn kein Inhalt, sollte None zurückgegeben werden.")
 
     @mock.patch('os.path.isfile', return_value=False)
-    @mock.patch('requests.get', side_effect=mock.Mock(side_effect=Exception("No connection")))
-    def test_download_csv_if_needed_download_fail(self, mock_req, mock_isfile):
+    @mock.patch('requests.get', side_effect=ConnectionError("No connection"))
+    def test_download_csv_if_needed_download_fail(self, mock_requests_get, mock_os_path_isfile):
         """Simuliert einen ConnectionError."""
         with self.assertRaises(ConnectionError):
             download_csv_if_needed("FAILSTATION")
@@ -220,8 +231,14 @@ class TestViews(TestCase):
         """Ungültige Parameter sollen 400 liefern."""
         url = reverse('stations_in_radius_view')
         response = self.client.get(url, {"latitude": "abc", "longitude": "xyz"})
+        # Parsen:
+        data = response.json()  # Bei Django 3.2+
+        # Alternativ (falls ältere Django-Versionen):
+        # data = json.loads(response.content)
+
+        # Jetzt hat data["error"] den Python-String, also "Ungültige Parameter."
+        self.assertIn("Ungültige Parameter.", data["error"])
         self.assertEqual(response.status_code, 400)
-        self.assertIn("Ungültige Parameter.", response.content.decode())
 
     @mock.patch('my_weather_application.views.STATIONS', [
         {"station_id": "TEST1", "latitude": 10.0, "longitude": 10.0, "name": "FarAwayStation"},
@@ -239,6 +256,9 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Keine Station im angegebenen Radius vorhanden", response.content.decode())
 
+    @mock.patch('my_weather_application.views.STATIONS', [
+        {"station_id": "FAIL_CONNECTION", "latitude": 50.0, "longitude": 9.0, "name": "ConnTestStation"}
+    ])
     @mock.patch('my_weather_application.views.download_csv_if_needed', side_effect=ConnectionError("Keine Verbindung"))
     def test_stations_in_radius_view_connection_error(self, mock_dl):
         """

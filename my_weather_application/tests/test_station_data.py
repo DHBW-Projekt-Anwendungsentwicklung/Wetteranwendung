@@ -1,0 +1,110 @@
+import sys
+import unittest
+from unittest.mock import patch, Mock
+from my_weather_application.station_data import load_station_data, STATIONS
+
+class TestStationData(unittest.TestCase):
+
+    def setUp(self):
+        # Entferne "test" aus sys.argv, damit load_station_data() nicht skippt
+        self._orig_argv = sys.argv.copy()
+        sys.argv = [arg for arg in sys.argv if 'test' not in arg]
+        STATIONS.clear()
+
+    def tearDown(self):
+        sys.argv = self._orig_argv
+
+    @patch('my_weather_application.station_data.requests.get')
+    def test_load_station_data_ok(self, mock_get):
+        """
+        Testet, ob load_station_data() die Daten korrekt parst und in STATIONS ablegt,
+        wenn eine gültige Response vorliegt.
+        """
+        # Beispiel-Daten für ghcnd-stations.txt (mind. 71 Zeichen pro Zeile)
+        fake_text = """\
+01234567890  50.1234   8.1234   123  XYZ SomeStation               .....
+99999999999  55.0000  10.0000   567      AnotherStation           .....
+SHORT
+"""
+        # Mock-Response
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = fake_text
+        mock_get.return_value = mock_response
+
+        # Aufruf
+        load_station_data()
+
+        # Überprüfung:
+        # 1) 'SHORT' ist kürzer als 71 Zeichen -> sollte ignoriert werden
+        # => Nur 2 Zeilen werden geparst
+        self.assertEqual(len(STATIONS), 2)
+
+        # 2) Prüfe die Felder
+        # Zeile 1
+        self.assertEqual(STATIONS[0]['station_id'], '01234567890')
+        self.assertAlmostEqual(STATIONS[0]['latitude'], 50.1234, places=4)
+        self.assertAlmostEqual(STATIONS[0]['longitude'], 8.1234, places=4)
+        self.assertEqual(STATIONS[0]['name'].rstrip(" ."), 'SomeStation')
+
+        # Zeile 2
+        self.assertEqual(STATIONS[1]['station_id'], '99999999999')
+        self.assertAlmostEqual(STATIONS[1]['latitude'], 55.0000, places=4)
+        self.assertAlmostEqual(STATIONS[1]['longitude'], 10.0000, places=4)
+        self.assertEqual(STATIONS[1]['name'].rstrip(" ."), 'AnotherStation')
+
+    @patch('my_weather_application.station_data.requests.get')
+    def test_load_station_data_http_error(self, mock_get):
+        """
+        Testet, ob bei einer HTTP-Fehlermeldung (z.B. 404, 500) 
+        eine Exception geworfen wird (raise_for_status).
+        """
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_response.raise_for_status.side_effect = Exception("HTTP Error 404")
+        mock_get.return_value = mock_response
+
+        with self.assertRaises(Exception) as ctx:
+            load_station_data()
+        self.assertIn("HTTP Error 404", str(ctx.exception))
+
+    @patch('my_weather_application.station_data.requests.get')
+    def test_load_station_data_empty(self, mock_get):
+        """
+        Testet den Fall, dass die Datei leer oder sehr kurz ist 
+        (d.h. keine verwertbaren Zeilen >= 71 Zeichen).
+        """
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = ""  # leer
+        mock_get.return_value = mock_response
+
+        load_station_data()
+        self.assertEqual(len(STATIONS), 0, "Es sollten keine Einträge geparst werden")
+
+    @patch('my_weather_application.station_data.requests.get')
+    def test_load_station_data_partial_line(self, mock_get):
+        """
+        Testet, ob eine Zeile < 71 Zeichen übersprungen wird.
+        """
+        fake_text = """\
+012345678   49.0000   9.0000 SomeName (sehr kurz, < 71 Zeichen)
+01234567890  49.1111   9.1111   111      ValidStation            ......
+"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = fake_text
+        mock_get.return_value = mock_response
+
+        load_station_data()
+        # Eine Zeile ist < 71 Zeichen, sollte ignoriert werden
+        self.assertEqual(len(STATIONS), 1, "Nur eine Zeile ist lang genug, also nur 1 Station parsen")
+
+        self.assertEqual(STATIONS[0]['station_id'], '01234567890')
+        self.assertAlmostEqual(STATIONS[0]['latitude'], 49.1111, places=4)
+        self.assertAlmostEqual(STATIONS[0]['longitude'], 9.1111, places=4)
+        self.assertEqual(STATIONS[0]['name'].rstrip(" ."), 'ValidStation')
+
+
+if __name__ == '__main__':
+    unittest.main()
