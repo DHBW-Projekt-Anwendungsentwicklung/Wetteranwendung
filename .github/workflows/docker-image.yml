@@ -30,6 +30,22 @@ jobs:
         run: |
           python manage.py test
 
+  frontend-tests:
+    name: Run Frontend Tests
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Install frontend dependencies
+        run: npm install
+      - name: Run Frontend Tests
+        run: npm test
+
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
