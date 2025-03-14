@@ -27,8 +27,6 @@ Navigieren Sie in das Verzeichnis, in dem sich die docker-compose.yml befindet (
 docker run -d --cpus=2 --memory=1g -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
 ```
 
-Der erste Befehl baut den Container (dadurch werden alle Änderungen, z. B. an der Konfiguration, übernommen), und der zweite Befehl startet den Container im Hintergrund.
-
 ### 3. Anwendung im Browser öffnen
 Sobald Docker läuft, können Sie die Anwendung unter folgender URL aufrufen:
 
