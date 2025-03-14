@@ -15,7 +15,6 @@ Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
 - Nach der Installation: Stelle sicher, dass Docker läuft und überprüfe die Version:
   ```sh
   docker --version
-  docker-compose --version
   ```
 - Starte Docker Desktop, bevor du mit den nächsten Schritten fortfährst.
 
@@ -25,7 +24,7 @@ Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
 Navigieren Sie in das Verzeichnis, in dem sich die docker-compose.yml befindet (dies ist im geklonten Repository oder in einem heruntergeladenen Ordner mit dem Projektinhalt). Führen Sie anschließend folgende Befehle aus:
 
 ```sh
-docker run -d -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
+docker run -d --cpus=2 --memory=1g -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
 ```
 
 Der erste Befehl baut den Container (dadurch werden alle Änderungen, z. B. an der Konfiguration, übernommen), und der zweite Befehl startet den Container im Hintergrund.
@@ -41,10 +40,10 @@ http://127.0.0.1:8000/
 Falls Sie den Container stoppen möchten:
 
 ```sh
-docker-compose down
+docker down CONTAINER-ID
 ```
-Falls Sie Änderungen am Code oder an der Konfiguration vornehmen, starten Sie den Container neu:
+Container erneut starten:
 
 ```sh
-docker-compose up --build
+Docker start CONTAINER_ID
 ```
