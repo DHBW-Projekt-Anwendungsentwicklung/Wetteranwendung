@@ -1,13 +1,9 @@
-# my_weather_application/station_data.py
-
 import requests
 
 STATIONS = []
 
 def load_station_data():
-    """
-    Lädt ghcnd-stations.txt von NOAA und parst NUR station_id, lat, lon, name.
-    """
+    #Laden von Stationsdaten von NOAA; Extrahieren von Station-ID, Latitude, Longitude, Stationsname
     url = "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
     print(f"Lade Stationsdaten von {url} ...")
 
@@ -33,6 +29,6 @@ def load_station_data():
         }
         parsed_stations.append(station_dict)
 
-    global STATIONS
-    STATIONS = parsed_stations
+    STATIONS.clear()
+    STATIONS.extend(parsed_stations)
     print(f"Fertig. {len(STATIONS)} Stationen geladen.")

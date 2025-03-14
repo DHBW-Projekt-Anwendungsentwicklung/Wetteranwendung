@@ -1,5 +1,3 @@
-# my_weather_application/views.py
-
 from django.shortcuts import render
 import math
 from django.http import JsonResponse
@@ -15,6 +13,7 @@ def my_weather_application(request):
     return render(request, 'frontend.html')
 
 def haversine(lat1, lon1, lat2, lon2):
+    #Entfernungsberechnung zwischen 2 geographischen Punkten
     R = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
@@ -25,6 +24,7 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 def stations_in_radius_view(request):
+    #Daten für alle Stationen im Radius und Zeitraum
     try:
         lat = float(request.GET.get('latitude', 0))
         lon = float(request.GET.get('longitude', 0))
@@ -36,13 +36,13 @@ def stations_in_radius_view(request):
         return JsonResponse({"error": "Ungültige Parameter."}, status=400)
 
     def has_valid_data_for_year(station_id, year):
+        #Prüfen ob valide Daten im Zeitraum vorliegen
         local_file = download_csv_if_needed(station_id)
         if local_file is None:
             return False
         records = parse_ghcn_csv_gz(local_file)
         return any(r for r in records if r["year"] == year and r["element"] in ("TMIN", "TMAX"))
 
-    # Zunächst alle Stationen innerhalb des Radius sammeln und nach Entfernung sortieren
     candidate_stations = []
     for station in STATIONS:
         distance = haversine(lat, lon, station["latitude"], station["longitude"])
@@ -54,7 +54,6 @@ def stations_in_radius_view(request):
 
     candidate_stations = sorted(candidate_stations, key=lambda x: x["distance"])
 
-    # Nun die sortierte Liste durchgehen und nur die Stationen mit gültigen Daten auswählen
     valid_stations = []
     try:
         for candidate in candidate_stations:
@@ -85,6 +84,7 @@ def stations_in_radius_view(request):
 
 
 def station_calculations_view(request):
+    #Rückgabe von berechneten Daten für Station im Zeitraum
     station_id = request.GET.get('station_id')
     if not station_id:
         return JsonResponse({"error": "No station_id provided"}, status=400)
@@ -126,6 +126,7 @@ def station_calculations_view(request):
     return JsonResponse(stats, safe=False)
 
 def download_csv_if_needed(station_id):
+    #Herunterladen von CSV-Daten falls noch nicht vorhanden
     cache_dir = os.path.join(os.path.dirname(__file__), "data_cache")
     os.makedirs(cache_dir, exist_ok=True)
 
@@ -152,6 +153,7 @@ def download_csv_if_needed(station_id):
         raise ConnectionError("Keine Verbindung zum Wetterdatenserver.")
 
 def parse_ghcn_csv_gz(filepath):
+    #Parsen von CSV-Dateien mit Wetterdaten
     records = []
     with gzip.open(filepath, "rt") as f:
         reader = csv.reader(f)
@@ -159,8 +161,8 @@ def parse_ghcn_csv_gz(filepath):
             if len(row) < 4:
                 continue
             station = row[0].strip()
-            date_str = row[1].strip()  # YYYYMMDD
-            element = row[2].strip()   # TMIN/TMAX
+            date_str = row[1].strip()
+            element = row[2].strip()
             val_str = row[3].strip()
 
             if element not in ("TMIN", "TMAX"):
@@ -189,6 +191,7 @@ def parse_ghcn_csv_gz(filepath):
     return records
 
 def calc_yearly_stats(daily_records, year_from, year_to, latitude):
+    #Berechnung der Jahres- und Saison-Statisitken
     data_by_year_month = defaultdict(lambda: {"TMIN": [], "TMAX": []})
     for r in daily_records:
         y, m = r["year"], r["month"]
@@ -222,7 +225,6 @@ def calc_yearly_stats(daily_records, year_from, year_to, latitude):
         return build_temp_text(tmp_min, tmp_max, missing)
 
     for year in range(first_available_year, year_to + 1):
-        # Alle TMIN/TMAX-Werte für dieses Jahr sammeln
         tmin_list = []
         tmax_list = []
         for m in range(1, 13):
@@ -230,7 +232,6 @@ def calc_yearly_stats(daily_records, year_from, year_to, latitude):
                 tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
                 tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
 
-        # Jahresmittel für TMIN / TMAX
         def average_or_none(values):
             return round(sum(values) / len(values), 1) if values else None
 

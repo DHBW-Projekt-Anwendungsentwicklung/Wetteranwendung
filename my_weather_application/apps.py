@@ -1,16 +1,11 @@
-from django.apps import AppConfig
-
-
-class MyWeatherApplicationConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "my_weather_application"
-
+import sys
 from django.apps import AppConfig
 
 class MyWeatherApplicationConfig(AppConfig):
+    #Laden von Stationsdaten bei Applikationsstart
     name = 'my_weather_application'
-
+    
     def ready(self):
-        from . import station_data
-        station_data.load_station_data()
-
+        if 'test' not in sys.argv:
+            from . import station_data
+            station_data.load_station_data()

@@ -1,5 +1,3 @@
-/* script.js*/
-
 // Karte initialisieren
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -72,6 +70,7 @@ function hideLoadingAnimation() {
 }
 
 function findStationsInRadius() {
+    //Senden von API-Anfragen zum Finden von Stationen im Radius
     const floatRegex = /^-?\d+(\.\d+)?$/;
     const intRegex = /^-?\d+$/;
 
@@ -94,7 +93,6 @@ function findStationsInRadius() {
     let radius = parseFloat(radiusStr);
     let maxStations = parseInt(maxStationsStr, 10);
 
-    // Vorherige Marker und Kreise entfernen
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
@@ -105,7 +103,6 @@ function findStationsInRadius() {
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
-    // Lösche alte Ergebnisliste in der Sidebar
     var oldList = document.getElementById("stationList");
     if (oldList) {
         oldList.remove();
@@ -124,14 +121,12 @@ function findStationsInRadius() {
 
     showLoadingAnimation();
 
-    // Lese zusätzlich die Jahre aus und hänge sie an den API-Call an
     let yearFrom = document.getElementById('yearFrom').value;
     let yearTo = document.getElementById('yearTo').value;
 
     fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
         .then(response => response.json())
         .then(data => {
-            // Überprüfe, ob der Server einen Fehler zurückgibt
             if (data.error) {
                 alert(data.error);
                 return;
@@ -170,12 +165,12 @@ function findStationsInRadius() {
             alert("Keine Verbindung zum Wetterdatenserver.");
         })
         .finally(() => {
-            // Ladeanimation ausblenden, sobald der API-Call abgeschlossen ist
             hideLoadingAnimation();
         });
 }
 
 function displayStationsInSidebar(data) {
+    //Stationen in Sidebar anzeigen
     var oldList = document.getElementById("stationList");
     if (oldList) {
         oldList.remove();
@@ -220,8 +215,8 @@ function displayStationsInSidebar(data) {
     sidebar.appendChild(stationList);
 }
 
-// Popup
 function loadStationCalculations(stationId) {
+    //Laden von Daten; Anzeige im Popup Fenster
     let yearFrom = parseInt(document.getElementById('yearFrom').value, 10) || 1800;
     let yearTo   = parseInt(document.getElementById('yearTo').value, 10)   || 2025;
 
@@ -240,7 +235,6 @@ function loadStationCalculations(stationId) {
             let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
             let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
 
-            // JSON als String
             let encodedData = encodeURIComponent(JSON.stringify(data));
 
             let popupHtml = buildCalculationsPopupHtml(encodedData, stationId, stationName);
@@ -271,7 +265,7 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
 
     let tableRows = "";
     statsArray.forEach(row => {
-        if (row.yearly_min_mean) {  // Nur wenn es Daten gibt
+        if (row.yearly_min_mean) {
             tableRows += `
               <tr>
                 <td>${row.year}</td>
@@ -308,7 +302,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
   </div>
 `;
 
-    // Grafik
     let page2Content = `
       <div class="popup-table-container page-2" style="display: none;">
         <div id="chartData" style="display:none;">${encodedData}</div>
@@ -358,6 +351,7 @@ function switchPopupPage(direction) {
 }
 
 function buildChartsOnPage2() {
+    //Erstellung der Temperaturkurven
     let dataDiv = document.getElementById("chartData");
     if (!dataDiv) return;
 
@@ -418,7 +412,6 @@ function buildChartsOnPage2() {
         winterMaxValues.push(wi.max);
     });
 
-    // Chart.js
     let ctx = document.getElementById('chartCombined').getContext('2d');
     new Chart(ctx, {
         type: 'line',
@@ -657,3 +650,7 @@ function validateMaxStations() {
 }
 
 populateYearDropdowns();
+
+if (typeof module !== 'undefined') {
+    module.exports = { findStationsInRadius };
+  }
