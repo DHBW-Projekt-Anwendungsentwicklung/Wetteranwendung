@@ -21,7 +21,7 @@ Bevor Sie starten, stellen Sie sicher, dass folgende Programme installiert sind:
 ---
 
 ### 2. Docker-Container starten
-Um den Container zu starten, führen Sie folgenden Befehle aus:
+Um den Container zu starten, führen Sie folgenden Befehl aus:
 
 ```sh
 docker run -d --cpus=2 --memory=1g -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
