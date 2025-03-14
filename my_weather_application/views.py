@@ -13,6 +13,7 @@ def my_weather_application(request):
     return render(request, 'frontend.html')
 
 def haversine(lat1, lon1, lat2, lon2):
+    #Entfernungsberechnung zwischen 2 geographischen Punkten
     R = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
@@ -23,6 +24,7 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 def stations_in_radius_view(request):
+    #Daten für alle Stationen im Radius und Zeitraum
     try:
         lat = float(request.GET.get('latitude', 0))
         lon = float(request.GET.get('longitude', 0))
@@ -34,6 +36,7 @@ def stations_in_radius_view(request):
         return JsonResponse({"error": "Ungültige Parameter."}, status=400)
 
     def has_valid_data_for_year(station_id, year):
+        #Prüfen ob valide Daten im Zeitraum vorliegen
         local_file = download_csv_if_needed(station_id)
         if local_file is None:
             return False
@@ -81,6 +84,7 @@ def stations_in_radius_view(request):
 
 
 def station_calculations_view(request):
+    #Rückgabe von berechneten Daten für Station im Zeitraum
     station_id = request.GET.get('station_id')
     if not station_id:
         return JsonResponse({"error": "No station_id provided"}, status=400)
@@ -122,6 +126,7 @@ def station_calculations_view(request):
     return JsonResponse(stats, safe=False)
 
 def download_csv_if_needed(station_id):
+    #Herunterladen von CSV-Daten falls noch nicht vorhanden
     cache_dir = os.path.join(os.path.dirname(__file__), "data_cache")
     os.makedirs(cache_dir, exist_ok=True)
 
@@ -148,6 +153,7 @@ def download_csv_if_needed(station_id):
         raise ConnectionError("Keine Verbindung zum Wetterdatenserver.")
 
 def parse_ghcn_csv_gz(filepath):
+    #Parsen von CSV-Dateien mit Wetterdaten
     records = []
     with gzip.open(filepath, "rt") as f:
         reader = csv.reader(f)
@@ -185,6 +191,7 @@ def parse_ghcn_csv_gz(filepath):
     return records
 
 def calc_yearly_stats(daily_records, year_from, year_to, latitude):
+    #Berechnung der Jahres- und Saison-Statisitken
     data_by_year_month = defaultdict(lambda: {"TMIN": [], "TMAX": []})
     for r in daily_records:
         y, m = r["year"], r["month"]

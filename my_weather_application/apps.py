@@ -2,6 +2,7 @@ import sys
 from django.apps import AppConfig
 
 class MyWeatherApplicationConfig(AppConfig):
+    #Laden von Stationsdaten bei Applikationsstart
     name = 'my_weather_application'
     
     def ready(self):

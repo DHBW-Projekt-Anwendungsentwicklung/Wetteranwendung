@@ -70,6 +70,7 @@ function hideLoadingAnimation() {
 }
 
 function findStationsInRadius() {
+    //Senden von API-Anfragen zum Finden von Stationen im Radius
     const floatRegex = /^-?\d+(\.\d+)?$/;
     const intRegex = /^-?\d+$/;
 
@@ -169,6 +170,7 @@ function findStationsInRadius() {
 }
 
 function displayStationsInSidebar(data) {
+    //Stationen in Sidebar anzeigen
     var oldList = document.getElementById("stationList");
     if (oldList) {
         oldList.remove();
@@ -213,8 +215,8 @@ function displayStationsInSidebar(data) {
     sidebar.appendChild(stationList);
 }
 
-// Popup
 function loadStationCalculations(stationId) {
+    //Laden von Daten; Anzeige im Popup Fenster
     let yearFrom = parseInt(document.getElementById('yearFrom').value, 10) || 1800;
     let yearTo   = parseInt(document.getElementById('yearTo').value, 10)   || 2025;
 
@@ -300,7 +302,6 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
   </div>
 `;
 
-    // Grafik
     let page2Content = `
       <div class="popup-table-container page-2" style="display: none;">
         <div id="chartData" style="display:none;">${encodedData}</div>
@@ -350,6 +351,7 @@ function switchPopupPage(direction) {
 }
 
 function buildChartsOnPage2() {
+    //Erstellung der Temperaturkurven
     let dataDiv = document.getElementById("chartData");
     if (!dataDiv) return;
 

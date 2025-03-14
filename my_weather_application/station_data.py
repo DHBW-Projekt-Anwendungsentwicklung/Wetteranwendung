@@ -3,6 +3,7 @@ import requests
 STATIONS = []
 
 def load_station_data():
+    #Laden von Stationsdaten von NOAA; Extrahieren von Station-ID, Latitude, Longitude, Stationsname
     url = "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
     print(f"Lade Stationsdaten von {url} ...")
 
