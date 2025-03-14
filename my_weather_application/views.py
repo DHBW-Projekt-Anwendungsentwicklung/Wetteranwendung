@@ -1,5 +1,3 @@
-# my_weather_application/views.py
-
 from django.shortcuts import render
 import math
 from django.http import JsonResponse
@@ -43,7 +41,6 @@ def stations_in_radius_view(request):
         records = parse_ghcn_csv_gz(local_file)
         return any(r for r in records if r["year"] == year and r["element"] in ("TMIN", "TMAX"))
 
-    # Zunächst alle Stationen innerhalb des Radius sammeln und nach Entfernung sortieren
     candidate_stations = []
     for station in STATIONS:
         distance = haversine(lat, lon, station["latitude"], station["longitude"])
@@ -55,7 +52,6 @@ def stations_in_radius_view(request):
 
     candidate_stations = sorted(candidate_stations, key=lambda x: x["distance"])
 
-    # Nun die sortierte Liste durchgehen und nur die Stationen mit gültigen Daten auswählen
     valid_stations = []
     try:
         for candidate in candidate_stations:
@@ -160,8 +156,8 @@ def parse_ghcn_csv_gz(filepath):
             if len(row) < 4:
                 continue
             station = row[0].strip()
-            date_str = row[1].strip()  # YYYYMMDD
-            element = row[2].strip()   # TMIN/TMAX
+            date_str = row[1].strip()
+            element = row[2].strip()
             val_str = row[3].strip()
 
             if element not in ("TMIN", "TMAX"):
@@ -223,7 +219,6 @@ def calc_yearly_stats(daily_records, year_from, year_to, latitude):
         return build_temp_text(tmp_min, tmp_max, missing)
 
     for year in range(first_available_year, year_to + 1):
-        # Alle TMIN/TMAX-Werte für dieses Jahr sammeln
         tmin_list = []
         tmax_list = []
         for m in range(1, 13):
@@ -231,7 +226,6 @@ def calc_yearly_stats(daily_records, year_from, year_to, latitude):
                 tmin_list.extend(data_by_year_month[(year, m)]["TMIN"])
                 tmax_list.extend(data_by_year_month[(year, m)]["TMAX"])
 
-        # Jahresmittel für TMIN / TMAX
         def average_or_none(values):
             return round(sum(values) / len(values), 1) if values else None
 

@@ -1,5 +1,3 @@
-# my_weather_application/station_data.py
-
 import requests
 
 STATIONS = []

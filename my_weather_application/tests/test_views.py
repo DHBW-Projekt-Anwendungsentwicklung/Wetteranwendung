@@ -11,7 +11,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.http import JsonResponse
 
-# Importiere Funktionen und Variablen aus deinen Modulen
+# Importiere Funktionen und Variablen aus den Modulen
 from my_weather_application.views import (
     my_weather_application,
     stations_in_radius_view,
@@ -24,9 +24,7 @@ from my_weather_application.views import (
 from my_weather_application.station_data import STATIONS
 
 def mock_gzip_open_text(buffer):
-        # Intern binär öffnen ...
         gzbin = gzip.GzipFile(fileobj=buffer, mode='rb')
-        # ... und per TextIOWrapper zu Text umwandeln:
         return io.TextIOWrapper(gzbin, encoding='utf-8')
 
 class TestHaversine(TestCase):
@@ -54,7 +52,6 @@ STATION,20200101,TMAX,100
 STATION,20200102,TMIN,40
 STATION,20200102,PRCP,5
 """
-        # Wir bauen eine GZIP-Datei in Memory
         buffer = BytesIO()
         with gzip.GzipFile(fileobj=buffer, mode='wb') as gz:
             gz.write(csv_content.encode('utf-8'))
@@ -83,12 +80,9 @@ STATION,20200102,TMAX,100
 
         with mock.patch('gzip.open', return_value=mock_gzip_open_text(buffer)):
             records = parse_ghcn_csv_gz("dummy.csv.gz")
-            # Die erste Zeile hat 'abc' statt eines Werts → ValueError -> val=None -> ignoriert
-            # Die zweite Zeile hat ein Dateiformat "2020bad" -> kein valider parse -> ignoriert
-            # Nur die dritte Zeile ist gültig
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0]["element"], "TMAX")
-            self.assertEqual(records[0]["value"], 10.0)  # 100/10.0
+            self.assertEqual(records[0]["value"], 10.0)
 
 
 class TestCalcYearlyStats(TestCase):
@@ -103,35 +97,27 @@ class TestCalcYearlyStats(TestCase):
         damit wir 'winter', 'spring', etc. abdecken.
         """
         daily_records = [
-            # Winter 2020
             {"year": 2020, "month": 1, "day": 1, "element": "TMIN", "value": -5},
             {"year": 2020, "month": 1, "day": 1, "element": "TMAX", "value": 2},
-            # Frühjahr 2020
             {"year": 2020, "month": 3, "day": 1, "element": "TMIN", "value": 5},
-            # 2021
             {"year": 2021, "month": 12, "day": 31, "element": "TMAX", "value": 10},
         ]
         stats = calc_yearly_stats(daily_records, 2020, 2021, latitude=50)
         self.assertEqual(len(stats), 2, "Stats für 2020 und 2021 erwartet.")
-        # 2020: hat TMIN/TMAX in Jan + TMIN in März, TMAX in März fehlt
         self.assertIn("yearly_min_mean", stats[0])
         self.assertIn("winter", stats[0])
-        # 2021: Nur TMAX am 31.12.
-        self.assertIn("winter", stats[1])  # Da winter teils vom alten Jahr Dec + Jan + Feb
+        self.assertIn("winter", stats[1])
 
     def test_calc_yearly_stats_southern_hemisphere(self):
         """
         Prüft, ob der Code für latitude < 0 (Südhalbkugel) den Jahreszeiten-Shift
         richtig behandelt, indem wir Dezember 2019 als Sommer 2020 betrachten.
         """
-        # In deiner Logik zählt Dez (year-1) zu Sommer (year).
-        # Deshalb: Wenn wir 2020 als 'year' testen, packen wir Dez 2019 hinein.
         daily_records = [
             {"year": 2019, "month": 12, "day": 15, "element": "TMIN", "value": 10},
             {"year": 2019, "month": 12, "day": 15, "element": "TMAX", "value": 25},
         ]
         stats = calc_yearly_stats(daily_records, 2020, 2020, latitude=-33.0)
-        # Wir erwarten, dass stats[0]["summer"] die gemittelten min:/max:-Werte enthält.
         self.assertEqual(len(stats), 1)
         self.assertIn("summer", stats[0])
         self.assertIn("min:", stats[0]["summer"])
@@ -142,7 +128,6 @@ class TestDownloadCsvIfNeeded(TestCase):
     """Separater Test für download_csv_if_needed."""
     @mock.patch('os.path.isfile', return_value=True)
     def test_download_csv_if_needed_already_exists(self, mock_isfile):
-        # Wenn die Datei bereits lokal existiert, wird kein erneuter Download durchgeführt
         path = download_csv_if_needed("TESTSTATION")
         self.assertIn("TESTSTATION.csv.gz", path)
 
@@ -157,8 +142,6 @@ class TestDownloadCsvIfNeeded(TestCase):
 
         path = download_csv_if_needed("TESTSTATION2")
         self.assertIn("TESTSTATION2.csv.gz", path)
-        # Prüfen, ob die Datei geschrieben wurde (mock_open oder ähnliches)
-        # Hier könnte man weiter verfeinern, z.B. ob open(..., "wb") aufgerufen wurde
 
     @mock.patch('os.path.isfile', return_value=False)
     @mock.patch('requests.get')
@@ -190,8 +173,6 @@ class TestViews(TestCase):
         """
         Testet, ob die Haupt-View (my_weather_application) ein Template zurückgibt.
         """
-        # Wichtig: Du brauchst in urls.py einen Eintrag:
-        # path('', my_weather_application, name='my_weather_application')
         url = reverse('my_weather_application')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -231,12 +212,8 @@ class TestViews(TestCase):
         """Ungültige Parameter sollen 400 liefern."""
         url = reverse('stations_in_radius_view')
         response = self.client.get(url, {"latitude": "abc", "longitude": "xyz"})
-        # Parsen:
-        data = response.json()  # Bei Django 3.2+
-        # Alternativ (falls ältere Django-Versionen):
-        # data = json.loads(response.content)
+        data = response.json()
 
-        # Jetzt hat data["error"] den Python-String, also "Ungültige Parameter."
         self.assertIn("Ungültige Parameter.", data["error"])
         self.assertEqual(response.status_code, 400)
 
@@ -306,7 +283,7 @@ class TestViews(TestCase):
         """
         Keine Datensätze -> Empty List, Status 200
         """
-        mock_cache.get.return_value = None  # Cache-Miss
+        mock_cache.get.return_value = None
         url = reverse('station_calculations_view')
         response = self.client.get(url, {"station_id": "TEST1"})
         self.assertEqual(response.status_code, 200)
@@ -335,7 +312,7 @@ class TestViews(TestCase):
     @mock.patch('my_weather_application.views.parse_ghcn_csv_gz')
     def test_station_calculations_view_data_ok(self, mock_parse, mock_download, mock_cache):
         """Station auf Südhalbkugel, Datensätze vorhanden."""
-        mock_cache.get.return_value = None  # Cache-Miss
+        mock_cache.get.return_value = None
         mock_parse.return_value = [
             {"year": 2020, "month": 6, "day": 15, "element": "TMIN", "value": 5},
             {"year": 2020, "month": 6, "day": 15, "element": "TMAX", "value": 15},
@@ -346,7 +323,6 @@ class TestViews(TestCase):
         data = response.json()
         self.assertTrue(isinstance(data, list))
         self.assertEqual(data[0]["year"], 2020)
-        # Prüfe, ob die Felder existieren
         self.assertIn("yearly_min_mean", data[0])
-        self.assertIn("winter", data[0])  # Im Südhalbkugel-Case = Juni/Juli/Aug
-        mock_cache.set.assert_called()  # Daten werden in den Cache geschrieben
+        self.assertIn("winter", data[0])
+        mock_cache.set.assert_called()

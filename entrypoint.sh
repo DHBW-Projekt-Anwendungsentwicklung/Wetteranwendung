@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e  # sorgt dafür, dass das Skript abbricht, wenn ein Befehl fehlschlägt
+set -e
 
 echo "=== Starte FRONTEND-Tests (npm test) ==="
 npm run test

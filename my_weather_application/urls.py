@@ -1,5 +1,3 @@
-# my_weather_application/urls.py
-
 from django.urls import path
 from .views import (
     my_weather_application,

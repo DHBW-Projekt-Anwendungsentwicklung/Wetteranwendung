@@ -16,8 +16,8 @@ global.L = {
     icon: jest.fn(() => ({})),
     marker: jest.fn(() => {
       const markerObj = {
-        addTo: jest.fn(() => markerObj),       // gibt markerObj zurück
-        bindTooltip: jest.fn(() => markerObj),   // gibt markerObj zurück
+        addTo: jest.fn(() => markerObj),
+        bindTooltip: jest.fn(() => markerObj),
         on: jest.fn(),
         getLatLng: jest.fn(() => ({ lat: 50.1, lng: 9.1 }))
       };
@@ -25,7 +25,7 @@ global.L = {
     }),
     circle: jest.fn(() => ({
       addTo: jest.fn(() => ({
-        getBounds: jest.fn(() => ({ dummy: true })) // Dummy-Implementierung
+        getBounds: jest.fn(() => ({ dummy: true }))
       })),
     })),
     tileLayer: jest.fn(() => ({
@@ -37,7 +37,6 @@ global.L = {
 
   describe("Front-End Tests für script.js", () => {
     beforeEach(() => {
-      // DOM vorbereiten – hier sind die benötigten Elemente enthalten:
       document.body.innerHTML = `
         <input id="latitude" value=""/>
         <input id="longitude" value=""/>
@@ -49,7 +48,6 @@ global.L = {
         <div id="sidebar"></div>
       `;
       
-      // Alle Module neu laden, damit populateYearDropdowns() den vorbereiteten DOM findet
       jest.resetModules();
       ({ findStationsInRadius } = require('../static/JS/script.js'));
     });
@@ -62,13 +60,10 @@ global.L = {
     document.getElementById("radius").value = "zehn";
     document.getElementById("maxStations").value = "xxx";
 
-    // Mock für alert()
     global.alert = jest.fn();
 
-    // Aufruf
     findStationsInRadius();
 
-    // Erwartung: alert(...) mit Hinweismeldung
     expect(global.alert).toHaveBeenCalledWith(
       "Bitte gültige Werte für Breitengrad, Längengrad und Anzahl eingeben!"
     );
@@ -81,7 +76,6 @@ global.L = {
     document.getElementById("radius").value = "10";
     document.getElementById("maxStations").value = "3";
 
-    // Wir mocken fetch(), um keinen echten Netzwerkzugriff zu haben
     global.fetch = jest.fn(() =>
       Promise.resolve({
         json: () => Promise.resolve([
@@ -90,18 +84,12 @@ global.L = {
       })
     );
 
-    // Optional: Leaflet-Funktionen mocken
-    // z.B. global.L = { map: jest.fn(...), etc. }
-
-    // Aufruf
     findStationsInRadius();
 
-    // Jetzt könnten wir prüfen, ob fetch mit passender URL aufgerufen wurde
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/stations/in_radius/?latitude=50&longitude=9&radius=10&max_stations=3")
     );
 
-    // Weiterer Check: z.B. ob "loadingAnimation" eingeblendet wurde
     const loadingDiv = document.getElementById("loadingAnimation");
     expect(loadingDiv.style.display).toBe("block");
   });

@@ -92,7 +92,6 @@ function findStationsInRadius() {
     let radius = parseFloat(radiusStr);
     let maxStations = parseInt(maxStationsStr, 10);
 
-    // Vorherige Marker und Kreise entfernen
     if (currentPing !== null) {
         map.removeLayer(currentPing);
     }
@@ -103,7 +102,6 @@ function findStationsInRadius() {
     stationMarkers.forEach(marker => map.removeLayer(marker));
     stationMarkers = [];
 
-    // Lösche alte Ergebnisliste in der Sidebar
     var oldList = document.getElementById("stationList");
     if (oldList) {
         oldList.remove();
@@ -129,7 +127,6 @@ function findStationsInRadius() {
     fetch(`${API_BASE_URL}/stations/in_radius/?latitude=${lat}&longitude=${lon}&radius=${radius}&max_stations=${maxStations}&yearFrom=${yearFrom}&yearTo=${yearTo}`)
         .then(response => response.json())
         .then(data => {
-            // Überprüfe, ob der Server einen Fehler zurückgibt
             if (data.error) {
                 alert(data.error);
                 return;
@@ -168,7 +165,6 @@ function findStationsInRadius() {
             alert("Keine Verbindung zum Wetterdatenserver.");
         })
         .finally(() => {
-            // Ladeanimation ausblenden, sobald der API-Call abgeschlossen ist
             hideLoadingAnimation();
         });
 }
@@ -238,7 +234,6 @@ function loadStationCalculations(stationId) {
             let station = stationMarkers.find(marker => String(marker.options.stationId) === String(stationId));
             let stationName = station && station.options.stationName ? station.options.stationName : "Unbekannt";
 
-            // JSON als String
             let encodedData = encodeURIComponent(JSON.stringify(data));
 
             let popupHtml = buildCalculationsPopupHtml(encodedData, stationId, stationName);
@@ -269,7 +264,7 @@ function buildCalculationsPopupHtml(encodedData, stationId, stationName) {
 
     let tableRows = "";
     statsArray.forEach(row => {
-        if (row.yearly_min_mean) {  // Nur wenn es Daten gibt
+        if (row.yearly_min_mean) {
             tableRows += `
               <tr>
                 <td>${row.year}</td>
@@ -416,7 +411,6 @@ function buildChartsOnPage2() {
         winterMaxValues.push(wi.max);
     });
 
-    // Chart.js
     let ctx = document.getElementById('chartCombined').getContext('2d');
     new Chart(ctx, {
         type: 'line',

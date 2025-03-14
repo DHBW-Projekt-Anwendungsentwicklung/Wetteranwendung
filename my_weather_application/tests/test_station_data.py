@@ -20,34 +20,25 @@ class TestStationData(unittest.TestCase):
         Testet, ob load_station_data() die Daten korrekt parst und in STATIONS ablegt,
         wenn eine gültige Response vorliegt.
         """
-        # Beispiel-Daten für ghcnd-stations.txt (mind. 71 Zeichen pro Zeile)
         fake_text = """\
 01234567890  50.1234   8.1234   123  XYZ SomeStation               .....
 99999999999  55.0000  10.0000   567      AnotherStation           .....
 SHORT
 """
-        # Mock-Response
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = fake_text
         mock_get.return_value = mock_response
 
-        # Aufruf
         load_station_data()
 
-        # Überprüfung:
-        # 1) 'SHORT' ist kürzer als 71 Zeichen -> sollte ignoriert werden
-        # => Nur 2 Zeilen werden geparst
         self.assertEqual(len(STATIONS), 2)
 
-        # 2) Prüfe die Felder
-        # Zeile 1
         self.assertEqual(STATIONS[0]['station_id'], '01234567890')
         self.assertAlmostEqual(STATIONS[0]['latitude'], 50.1234, places=4)
         self.assertAlmostEqual(STATIONS[0]['longitude'], 8.1234, places=4)
         self.assertEqual(STATIONS[0]['name'].rstrip(" ."), 'SomeStation')
 
-        # Zeile 2
         self.assertEqual(STATIONS[1]['station_id'], '99999999999')
         self.assertAlmostEqual(STATIONS[1]['latitude'], 55.0000, places=4)
         self.assertAlmostEqual(STATIONS[1]['longitude'], 10.0000, places=4)
@@ -76,7 +67,7 @@ SHORT
         """
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.text = ""  # leer
+        mock_response.text = ""
         mock_get.return_value = mock_response
 
         load_station_data()
@@ -97,7 +88,6 @@ SHORT
         mock_get.return_value = mock_response
 
         load_station_data()
-        # Eine Zeile ist < 71 Zeichen, sollte ignoriert werden
         self.assertEqual(len(STATIONS), 1, "Nur eine Zeile ist lang genug, also nur 1 Station parsen")
 
         self.assertEqual(STATIONS[0]['station_id'], '01234567890')
