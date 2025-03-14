@@ -6,7 +6,6 @@ from my_weather_application.station_data import load_station_data, STATIONS
 class TestStationData(unittest.TestCase):
 
     def setUp(self):
-        # Entferne "test" aus sys.argv, damit load_station_data() nicht skippt
         self._orig_argv = sys.argv.copy()
         sys.argv = [arg for arg in sys.argv if 'test' not in arg]
         STATIONS.clear()
@@ -16,10 +15,6 @@ class TestStationData(unittest.TestCase):
 
     @patch('my_weather_application.station_data.requests.get')
     def test_load_station_data_ok(self, mock_get):
-        """
-        Testet, ob load_station_data() die Daten korrekt parst und in STATIONS ablegt,
-        wenn eine gültige Response vorliegt.
-        """
         fake_text = """\
 01234567890  50.1234   8.1234   123  XYZ SomeStation               .....
 99999999999  55.0000  10.0000   567      AnotherStation           .....
@@ -46,10 +41,6 @@ SHORT
 
     @patch('my_weather_application.station_data.requests.get')
     def test_load_station_data_http_error(self, mock_get):
-        """
-        Testet, ob bei einer HTTP-Fehlermeldung (z.B. 404, 500) 
-        eine Exception geworfen wird (raise_for_status).
-        """
         mock_response = Mock()
         mock_response.status_code = 404
         mock_response.raise_for_status.side_effect = Exception("HTTP Error 404")
@@ -61,10 +52,6 @@ SHORT
 
     @patch('my_weather_application.station_data.requests.get')
     def test_load_station_data_empty(self, mock_get):
-        """
-        Testet den Fall, dass die Datei leer oder sehr kurz ist 
-        (d.h. keine verwertbaren Zeilen >= 71 Zeichen).
-        """
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = ""

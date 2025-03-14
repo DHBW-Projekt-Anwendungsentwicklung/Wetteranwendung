@@ -120,7 +120,6 @@ function findStationsInRadius() {
 
     showLoadingAnimation();
 
-    // Lese zusätzlich die Jahre aus und hänge sie an den API-Call an
     let yearFrom = document.getElementById('yearFrom').value;
     let yearTo = document.getElementById('yearTo').value;
 

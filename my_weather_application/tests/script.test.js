@@ -54,7 +54,6 @@ global.L = {
   
 
   test("Fehler bei ungültigen Eingaben (Regex-Check)", () => {
-    // Simulation: falsche Koordinaten
     document.getElementById("latitude").value = "abc"; 
     document.getElementById("longitude").value = "def";
     document.getElementById("radius").value = "zehn";
@@ -70,7 +69,6 @@ global.L = {
   });
 
   test("Korrektes Setzen von Marker + Radius, wenn Eingaben gültig", () => {
-    // Gültige Eingaben
     document.getElementById("latitude").value = "50.0";
     document.getElementById("longitude").value = "9.0";
     document.getElementById("radius").value = "10";

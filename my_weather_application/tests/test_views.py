@@ -11,7 +11,6 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.http import JsonResponse
 
-# Importiere Funktionen und Variablen aus den Modulen
 from my_weather_application.views import (
     my_weather_application,
     stations_in_radius_view,
@@ -28,22 +27,16 @@ def mock_gzip_open_text(buffer):
         return io.TextIOWrapper(gzbin, encoding='utf-8')
 
 class TestHaversine(TestCase):
-    """Tests für die Hilfsfunktion 'haversine'."""
     def test_haversine_same_point(self):
         distance = haversine(50.0, 9.0, 50.0, 9.0)
         self.assertEqual(distance, 0, "Distance should be 0 when points are identical.")
 
     def test_haversine_known_distance(self):
-        """
-        Testet mit grob bekannten Koordinaten,
-        z. B. (50,0) nach (50,1) ~ 70 km.
-        """
         distance = haversine(50.0, 0.0, 50.0, 1.0)
         self.assertTrue(60 < distance < 80, f"Expected distance near ~70, got {distance}")
 
 
 class TestParseGhcnCsvGz(TestCase):
-    """Tests für parse_ghcn_csv_gz, welches CSV-GZ-Dateien liest und TMIN/TMAX erfasst."""
     
     def test_parse_valid_tmin_tmax(self):
         csv_content = """\
@@ -65,9 +58,6 @@ STATION,20200102,PRCP,5
             self.assertEqual(records[2]["element"], "TMIN")
 
     def test_parse_with_invalid_rows(self):
-        """
-        Testet, wie parse_ghcn_csv_gz auf leere oder fehlerhafte Zeilen reagiert.
-        """
         csv_content = """\
 STATION,20200101,TMIN,abc  # invalid float
 STATION,2020bad,TMAX,100   # invalid date format
@@ -86,16 +76,11 @@ STATION,20200102,TMAX,100
 
 
 class TestCalcYearlyStats(TestCase):
-    """Tests für calc_yearly_stats, das Jahres-/Saisonwerte aufbereitet."""
     def test_calc_yearly_stats_no_data(self):
         stats = calc_yearly_stats([], 2020, 2021, latitude=10)
         self.assertEqual(stats, [], "Keine Daten → leere Liste erwartet.")
 
     def test_calc_yearly_stats_partial_data_north(self):
-        """
-        Teilweise Daten für Nordhalbkugel, 
-        damit wir 'winter', 'spring', etc. abdecken.
-        """
         daily_records = [
             {"year": 2020, "month": 1, "day": 1, "element": "TMIN", "value": -5},
             {"year": 2020, "month": 1, "day": 1, "element": "TMAX", "value": 2},
@@ -109,10 +94,6 @@ class TestCalcYearlyStats(TestCase):
         self.assertIn("winter", stats[1])
 
     def test_calc_yearly_stats_southern_hemisphere(self):
-        """
-        Prüft, ob der Code für latitude < 0 (Südhalbkugel) den Jahreszeiten-Shift
-        richtig behandelt, indem wir Dezember 2019 als Sommer 2020 betrachten.
-        """
         daily_records = [
             {"year": 2019, "month": 12, "day": 15, "element": "TMIN", "value": 10},
             {"year": 2019, "month": 12, "day": 15, "element": "TMAX", "value": 25},
@@ -125,7 +106,6 @@ class TestCalcYearlyStats(TestCase):
 
 
 class TestDownloadCsvIfNeeded(TestCase):
-    """Separater Test für download_csv_if_needed."""
     @mock.patch('os.path.isfile', return_value=True)
     def test_download_csv_if_needed_already_exists(self, mock_isfile):
         path = download_csv_if_needed("TESTSTATION")
@@ -134,7 +114,6 @@ class TestDownloadCsvIfNeeded(TestCase):
     @mock.patch('os.path.isfile', return_value=False)
     @mock.patch('requests.get')
     def test_download_csv_if_needed_download_ok(self, mock_req, mock_isfile):
-        """Mockt einen erfolgreichen Download."""
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.content = b'some binary data'
@@ -146,7 +125,6 @@ class TestDownloadCsvIfNeeded(TestCase):
     @mock.patch('os.path.isfile', return_value=False)
     @mock.patch('requests.get')
     def test_download_csv_if_needed_download_empty(self, mock_req, mock_isfile):
-        """Mockt eine Antwort mit leerem Body - sollte None zurückliefern."""
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.content = b''
@@ -158,21 +136,16 @@ class TestDownloadCsvIfNeeded(TestCase):
     @mock.patch('os.path.isfile', return_value=False)
     @mock.patch('requests.get', side_effect=ConnectionError("No connection"))
     def test_download_csv_if_needed_download_fail(self, mock_requests_get, mock_os_path_isfile):
-        """Simuliert einen ConnectionError."""
         with self.assertRaises(ConnectionError):
             download_csv_if_needed("FAILSTATION")
 
 
 class TestViews(TestCase):
-    """Integrationstests für die Views-Funktionen mittels Django TestClient."""
 
     def setUp(self):
         self.client = Client()
 
     def test_my_weather_application_view(self):
-        """
-        Testet, ob die Haupt-View (my_weather_application) ein Template zurückgibt.
-        """
         url = reverse('my_weather_application')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -185,10 +158,6 @@ class TestViews(TestCase):
     @mock.patch('my_weather_application.views.download_csv_if_needed', return_value="dummy.csv.gz")
     @mock.patch('my_weather_application.views.parse_ghcn_csv_gz')
     def test_stations_in_radius_view_ok(self, mock_parse, mock_download):
-        """
-        Stationen innerhalb des Radius werden gefiltert und zurückgegeben,
-        sofern yearFrom & yearTo Daten vorhanden sind.
-        """
         mock_parse.return_value = [
             {"year": 1800, "element": "TMIN", "value": 1},
             {"year": 2025, "element": "TMAX", "value": 2},
@@ -209,7 +178,6 @@ class TestViews(TestCase):
         self.assertEqual(data[1]["station_id"], "TEST2")
 
     def test_stations_in_radius_view_invalid_params(self):
-        """Ungültige Parameter sollen 400 liefern."""
         url = reverse('stations_in_radius_view')
         response = self.client.get(url, {"latitude": "abc", "longitude": "xyz"})
         data = response.json()
@@ -221,7 +189,6 @@ class TestViews(TestCase):
         {"station_id": "TEST1", "latitude": 10.0, "longitude": 10.0, "name": "FarAwayStation"},
     ])
     def test_stations_in_radius_view_no_stations_found(self):
-        """Station ist zu weit entfernt → 400 mit Fehlermeldung."""
         url = reverse('stations_in_radius_view')
         response = self.client.get(url, {
             "latitude": 50.0,
@@ -238,10 +205,6 @@ class TestViews(TestCase):
     ])
     @mock.patch('my_weather_application.views.download_csv_if_needed', side_effect=ConnectionError("Keine Verbindung"))
     def test_stations_in_radius_view_connection_error(self, mock_dl):
-        """
-        Simuliert, dass download_csv_if_needed eine ConnectionError wirft.
-        View sollte dann 400 mit Meldung ausgeben.
-        """
         url = reverse('stations_in_radius_view')
         response = self.client.get(url, {
             "latitude": 50.0,
@@ -258,10 +221,6 @@ class TestViews(TestCase):
     ])
     @mock.patch('my_weather_application.views.download_csv_if_needed', return_value=None)
     def test_stations_in_radius_view_file_none(self, mock_dl):
-        """
-        download_csv_if_needed gibt None zurück → keine Daten, 
-        also keine valid_stations -> 400
-        """
         url = reverse('stations_in_radius_view')
         response = self.client.get(url, {
             "latitude": 50.0,
@@ -280,9 +239,6 @@ class TestViews(TestCase):
     @mock.patch('my_weather_application.views.download_csv_if_needed', return_value="dummy.csv.gz")
     @mock.patch('my_weather_application.views.parse_ghcn_csv_gz', return_value=[])
     def test_station_calculations_view_no_data(self, mock_parse, mock_download, mock_cache):
-        """
-        Keine Datensätze -> Empty List, Status 200
-        """
         mock_cache.get.return_value = None
         url = reverse('station_calculations_view')
         response = self.client.get(url, {"station_id": "TEST1"})
@@ -290,7 +246,6 @@ class TestViews(TestCase):
         self.assertEqual(response.json(), [])
 
     def test_station_calculations_view_no_station_id(self):
-        """Wenn station_id fehlt -> 400"""
         url = reverse('station_calculations_view')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -298,7 +253,6 @@ class TestViews(TestCase):
 
     @mock.patch('my_weather_application.views.STATIONS', [])
     def test_station_calculations_view_station_not_found(self):
-        """Station existiert nicht -> 404"""
         url = reverse('station_calculations_view')
         response = self.client.get(url, {"station_id": "UNKNOWN"})
         self.assertEqual(response.status_code, 404)
@@ -311,7 +265,6 @@ class TestViews(TestCase):
     @mock.patch('my_weather_application.views.download_csv_if_needed', return_value="dummy.csv.gz")
     @mock.patch('my_weather_application.views.parse_ghcn_csv_gz')
     def test_station_calculations_view_data_ok(self, mock_parse, mock_download, mock_cache):
-        """Station auf Südhalbkugel, Datensätze vorhanden."""
         mock_cache.get.return_value = None
         mock_parse.return_value = [
             {"year": 2020, "month": 6, "day": 15, "element": "TMIN", "value": 5},
