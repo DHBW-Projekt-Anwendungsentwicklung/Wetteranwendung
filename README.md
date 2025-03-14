@@ -1,7 +1,7 @@
 # How to Install Wetteranwendung (Windows)
 
 ## 1. Voraussetzungen
-Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
+Bevor Sie starten, stellen Sie sicher, dass folgende Programme installiert sind:
 
 ### Git installieren
 - Git für Windows herunterladen: [Git-SCM Download](https://git-scm.com/downloads)
@@ -12,11 +12,11 @@ Bevor du startest, stelle sicher, dass folgende Programme installiert sind:
 
 ### Docker & Docker Compose installieren
 - Docker Desktop für Windows herunterladen: [Docker Download](https://www.docker.com/get-started)
-- Nach der Installation: Stelle sicher, dass Docker läuft und überprüfe die Version:
+- Nach der Installation: Stellen Sie sicher, dass Docker läuft und überprüfen Sie die Version:
   ```sh
   docker --version
   ```
-- Starte Docker Desktop, bevor du mit den nächsten Schritten fortfährst.
+- Starten Sie Docker Desktop, bevor Sie mit den nächsten Schritten fortfahren.
 
 ---
 
