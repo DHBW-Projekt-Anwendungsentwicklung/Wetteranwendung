@@ -21,7 +21,7 @@ Bevor Sie starten, stellen Sie sicher, dass folgende Programme installiert sind:
 ---
 
 ### 2. Docker-Container starten
-Navigieren Sie in das Verzeichnis, in dem sich die docker-compose.yml befindet (dies ist im geklonten Repository oder in einem heruntergeladenen Ordner mit dem Projektinhalt). Führen Sie anschließend folgende Befehle aus:
+Um den Container zu starten, führen Sie folgenden Befehle aus:
 
 ```sh
 docker run -d --cpus=2 --memory=1g -p 127.0.0.1:8000:8000 ghcr.io/dhbw-projekt-anwendungsentwicklung/wetteranwendung:latest
